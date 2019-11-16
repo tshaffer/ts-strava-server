@@ -4,11 +4,9 @@ import {
   getCSS,
   getBundle,
  } from '../controllers/mainController';
-// import {
-//   setRestaurant,
-//   getAllRestaurants,
-// } from '../controllers/restaurant';
-// import { setRestaurantVisit, getAllRestaurantVisits } from '../controllers/restaurantVisit';
+ import {
+   getActivities,
+ } from '../controllers/activity';
 
 export class Routes {
 
@@ -21,5 +19,6 @@ export class Routes {
     app.get('/index.html', getIndex);
     app.get('/css/app.css', getCSS);
     app.get('/build/bundle.js', getBundle);
+    app.get('/getActivities', getActivities);
   }
 }
