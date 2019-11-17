@@ -1,12 +1,8 @@
 import https from 'https';
 import axios from 'axios';
-import { Activity } from '../type';
+import { isNil } from 'lodash';
 
-// import {
-//   Athlete,
-// } from '../type';
-
-let globalAccessToken: any;
+import { StravaNativeActivity, Activity } from '../type';
 
 export function retrieveAccessToken() {
 
@@ -30,7 +26,6 @@ export function retrieveAccessToken() {
     .then((response: any) => {
       console.log('response to axios post: ');
       console.log(response);
-      globalAccessToken = response.data.access_token;
       return Promise.resolve(response.data.access_token);
     }).catch((err: Error) => {
       console.log('response to axios post: ');
@@ -69,9 +64,9 @@ function fetchStravaData(endPoint: string, accessToken: string) {
   });
 }
 
-function parseStravaSummaryActivities(stravaSummaryActivities: any[]) {
+function parseStravaSummaryActivities(stravaSummaryActivities: StravaNativeActivity[]) {
 
-  const activities: any[] = [];
+  const activities: Activity[] = [];
 
   if (!(stravaSummaryActivities instanceof Array)) {
     console.log('stravaSummaryActivities not array');
@@ -79,30 +74,50 @@ function parseStravaSummaryActivities(stravaSummaryActivities: any[]) {
     return;
   }
 
-  stravaSummaryActivities.forEach( (summaryActivity: Activity) => {
+  stravaSummaryActivities.forEach( (stravaNativeActivity: StravaNativeActivity) => {
 
-    console.log(summaryActivity);
+    console.log(stravaNativeActivity);
 
-    if (!summaryActivity.description) {
-      summaryActivity.description = '';
+    const activity: Activity = {
+      id: stravaNativeActivity.id,
+      athlete: stravaNativeActivity.athlete,
+      averageSpeed: stravaNativeActivity.average_speed,
+      description: stravaNativeActivity.description,
+      distance: stravaNativeActivity.distance,
+      elapsedTime: stravaNativeActivity.elapsed_time,
+      kilojoules: stravaNativeActivity.kilojoules,
+      city: stravaNativeActivity.city,
+      maxSpeed: stravaNativeActivity.max_speed,
+      movingTime: stravaNativeActivity.moving_time,
+      name: stravaNativeActivity.name,
+      startDateLocal: stravaNativeActivity.start_date_local,
+      totalElevationGain: stravaNativeActivity.total_elevation_gain,
+    };
+
+    if (!isNil(stravaNativeActivity.map) && !isNil(stravaNativeActivity.map.summary_polyline)) {
+      activity.mapSummaryPolyline = stravaNativeActivity.map.summary_polyline;
     }
-    if (!summaryActivity.kilojoules) {
-      summaryActivity.kilojoules = 0;
+
+    if (isNil(stravaNativeActivity.description)) {
+      activity.description = '';
     }
-    if (!summaryActivity.city) {
-      summaryActivity.city = '';
+    if (isNil(stravaNativeActivity.kilojoules)) {
+      activity.kilojoules = 0;
     }
-    activities.push(summaryActivity);
+    if (isNil(stravaNativeActivity.city)) {
+      activity.city = '';
+    }
+    activities.push(activity);
   });
 
   return activities;
 }
 
-export function fetchSummaryActivities(accessToken: string, secondsSinceEpochOfLastActivity: string): Promise<any> {
+export function fetchSummaryActivities(accessToken: string, secondsSinceEpochOfLastActivity: number): Promise<any> {
 
   return new Promise((resolve) => {
 
-    const path = 'athlete/activities?after=' + secondsSinceEpochOfLastActivity;
+    const path = 'athlete/activities?after=' + secondsSinceEpochOfLastActivity.toString();
 
     fetchStravaData(path, accessToken)
       .then( (stravaSummaryActivities: any[]) => {

@@ -6,7 +6,7 @@ export interface Athlete {
   email: string;
 }
 
-export interface Activity {
+export interface StravaNativeActivity {
 
 /*
 "resource_state": 2,
@@ -89,4 +89,21 @@ export interface Activity {
   name: string;
   start_date_local: string;
   total_elevation_gain: number;
+}
+
+export interface Activity {
+  id: number;
+  athlete: any;
+  averageSpeed: number;
+  description: string;
+  distance: number;
+  elapsedTime: number;
+  kilojoules: number;
+  city: string;
+  mapSummaryPolyline?: string;
+  maxSpeed: number;
+  movingTime: number;
+  name: string;
+  startDateLocal: string;
+  totalElevationGain: number;
 }
