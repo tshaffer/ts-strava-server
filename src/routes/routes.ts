@@ -3,9 +3,9 @@ import {
   getIndex,
   getCSS,
   getBundle,
- } from '../controllers/mainController';
- import { getAthletes } from '../controllers/athlete';
- import { getActivities } from '../controllers/activity';
+  getAthletes,
+  getActivities,
+ } from '../controllers';
 
 export class Routes {
 
