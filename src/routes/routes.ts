@@ -4,9 +4,8 @@ import {
   getCSS,
   getBundle,
  } from '../controllers/mainController';
- import {
-   getActivities,
- } from '../controllers/activity';
+ import { getAthletes } from '../controllers/athlete';
+ import { getActivities } from '../controllers/activity';
 
 export class Routes {
 
@@ -20,5 +19,6 @@ export class Routes {
     app.get('/css/app.css', getCSS);
     app.get('/build/bundle.js', getBundle);
     app.get('/getActivities', getActivities);
+    app.get('/getAthletes', getAthletes);
   }
 }
