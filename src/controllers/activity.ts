@@ -38,11 +38,8 @@ export function getActivities(request: Request, response: Response) {
 
       fetchSummaryActivities(accessToken, secondsSinceEpochOfLastActivity)
         .then((summaryActivities: any[]) => {
-          response.json({
-            summaryActivities,
-          });
+          response.json(summaryActivities);
         });
-      // response.json(accessToken);
     })
     .catch((err: Error) => {
       console.log('accessToken error: ', err);
