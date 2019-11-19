@@ -5,6 +5,7 @@ import {
   getBundle,
   getAthletes,
   getActivities,
+  getDetailedActivity,
  } from '../controllers';
 
 export class Routes {
@@ -19,6 +20,7 @@ export class Routes {
     app.get('/css/app.css', getCSS);
     app.get('/build/bundle.js', getBundle);
     app.get('/getActivities', getActivities);
+    app.get('/getDetailedActivity', getDetailedActivity);
     app.get('/getAthletes', getAthletes);
   }
 }

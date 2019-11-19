@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { fetchSummaryActivities, retrieveAccessToken } from '../controllers';
+import { fetchSummaryActivities, retrieveAccessToken, fetchDetailedActivity } from '../controllers';
 
 export function getActivities(request: Request, response: Response) {
   console.log('getActivities');
@@ -46,3 +46,18 @@ export function getActivities(request: Request, response: Response) {
     });
 }
 
+export function getDetailedActivity(request: Request, response: Response) {
+
+  const activityId: string = request.query.activityId;
+
+  return retrieveAccessToken()
+    .then((accessToken: any) => {
+      fetchDetailedActivity(accessToken, activityId)
+        .then((detailedActivity: any) => {
+          response.json(detailedActivity);
+        });
+    })
+    .catch((err: Error) => {
+      console.log('accessToken error: ', err);
+    });
+}
