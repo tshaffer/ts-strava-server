@@ -2,7 +2,7 @@ import https from 'https';
 import axios from 'axios';
 import { isNil } from 'lodash';
 
-import { StravaNativeActivity, Activity, StravaNativeDetailedActivity, DetailedActivity, StravaNativeSegmentEffort, SegmentEffort, Segment } from '../type';
+import { StravaNativeActivity, Activity, StravaNativeDetailedActivity, DetailedActivity, StravaNativeSegmentEffort, SegmentEffort, Segment, StravaNativeAchievement, Achievement } from '../type';
 
 export function retrieveAccessToken() {
 
@@ -80,7 +80,7 @@ function parseStravaSummaryActivities(stravaSummaryActivities: StravaNativeActiv
 
     const activity: Activity = {
       id: stravaNativeActivity.id,
-      athlete: stravaNativeActivity.athlete,
+      athleteId: stravaNativeActivity.athlete.id,
       averageSpeed: stravaNativeActivity.average_speed,
       description: stravaNativeActivity.description,
       distance: stravaNativeActivity.distance,
@@ -141,6 +141,15 @@ function parseStravaDetailedActivity(stravaDetailedActivity: StravaNativeDetaile
     console.log('segmentEffortId');
     console.log(stravaNativeSegmentEffort.segment.id);
 
+    const achievements: Achievement[] = [];
+    for (const stravaAchievement of stravaNativeSegmentEffort.achievements) {
+      const achievement: Achievement = {
+        type: stravaAchievement.type,
+        rank: stravaAchievement.rank,
+      };
+      achievements.push(achievement);
+    }
+
     const segment: Segment = {
       id: stravaNativeSegmentEffort.segment.id,
       name: stravaNativeSegmentEffort.segment.name,
@@ -149,7 +158,7 @@ function parseStravaDetailedActivity(stravaDetailedActivity: StravaNativeDetaile
       maximumGrade: stravaNativeSegmentEffort.segment.maximum_grade,
       elevationHigh: stravaNativeSegmentEffort.segment.elevation_high,
       elevationLow: stravaNativeSegmentEffort.segment.elevation_low,
-    }
+    };
 
     const segmentEffort: SegmentEffort = {
       id: stravaNativeSegmentEffort.id,
@@ -161,7 +170,7 @@ function parseStravaDetailedActivity(stravaDetailedActivity: StravaNativeDetaile
       averageWatts: stravaNativeSegmentEffort.average_watts,
       segment,
       prRank: stravaNativeSegmentEffort.pr_rank,
-      achievements: [],
+      achievements,
     };
 
     segmentEfforts.push(segmentEffort);
@@ -169,7 +178,7 @@ function parseStravaDetailedActivity(stravaDetailedActivity: StravaNativeDetaile
 
   const detailedActivity: DetailedActivity = {
     id: stravaDetailedActivity.id,
-    athlete: stravaDetailedActivity.athlete,
+    athleteId: stravaDetailedActivity.athlete.id,
     averageSpeed: stravaDetailedActivity.average_speed,
     description: stravaDetailedActivity.description,
     distance: stravaDetailedActivity.distance,

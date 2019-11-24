@@ -93,7 +93,7 @@ export interface StravaNativeActivity {
 
 export interface Activity {
   id: number;
-  athlete: any;
+  athleteId: number;
   averageSpeed: number;
   description: string;
   distance: number;
@@ -1490,6 +1490,11 @@ export interface StravaNativeSegment {
   elevation_low: number;
 }
 
+export interface StravaNativeAchievement {
+  type: string;
+  rank: number;
+}
+
 export interface StravaNativeSegmentEffort {
   id: number;
   name: string;
@@ -1505,7 +1510,7 @@ export interface StravaNativeSegmentEffort {
   average_watts: number;
   segment: StravaNativeSegment;
   pr_rank: number;
-  achievements: any[]; // type: string; rank: number
+  achievements: StravaNativeAchievement[];
 }
 
 export interface StravaNativeDetailedActivity extends StravaNativeActivity {
@@ -1524,6 +1529,11 @@ export interface Segment {
   elevationLow: number;
 }
 
+export interface Achievement {
+  type: string;
+  rank: number;
+}
+
 export interface SegmentEffort {
   id: number;
   name: string;
@@ -1534,7 +1544,7 @@ export interface SegmentEffort {
   averageWatts: number;
   segment: Segment;
   prRank: number;
-  achievements: any[]; // type: string; rank: number
+  achievements: Achievement[];
 }
 
 export interface DetailedActivity extends Activity {
