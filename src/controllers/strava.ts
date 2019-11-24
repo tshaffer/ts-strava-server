@@ -134,12 +134,6 @@ function parseStravaDetailedActivity(stravaDetailedActivity: StravaNativeDetaile
   const segmentEfforts: SegmentEffort[] = [];
 
   for (const stravaNativeSegmentEffort of stravaDetailedActivity.segment_efforts) {
-    console.log('segmentEffortId');
-    console.log(stravaNativeSegmentEffort.id);
-    // console.log('segmentEffort');
-    // console.log(segmentEffort);
-    console.log('segmentEffortId');
-    console.log(stravaNativeSegmentEffort.segment.id);
 
     const achievements: Achievement[] = [];
     for (const stravaAchievement of stravaNativeSegmentEffort.achievements) {
@@ -176,6 +170,8 @@ function parseStravaDetailedActivity(stravaDetailedActivity: StravaNativeDetaile
     segmentEfforts.push(segmentEffort);
   }
 
+  // TEDTODO - create method for assigning based activity members and use that here and for
+  // summary activities
   const detailedActivity: DetailedActivity = {
     id: stravaDetailedActivity.id,
     athleteId: stravaDetailedActivity.athlete.id,
@@ -194,7 +190,22 @@ function parseStravaDetailedActivity(stravaDetailedActivity: StravaNativeDetaile
     averageTemp: stravaDetailedActivity.average_temp,
     averageWatts: stravaDetailedActivity.average_watts,
     segmentEfforts,
+  };
+
+  if (!isNil(stravaDetailedActivity.map) && !isNil(stravaDetailedActivity.map.summary_polyline)) {
+    detailedActivity.mapSummaryPolyline = stravaDetailedActivity.map.summary_polyline;
   }
+
+  if (isNil(stravaDetailedActivity.description)) {
+    detailedActivity.description = '';
+  }
+  if (isNil(stravaDetailedActivity.kilojoules)) {
+    detailedActivity.kilojoules = 0;
+  }
+  if (isNil(stravaDetailedActivity.city)) {
+    detailedActivity.city = '';
+  }
+
   return detailedActivity;
 }
 
