@@ -157,6 +157,7 @@ function parseStravaDetailedActivity(stravaDetailedActivity: StravaNativeDetaile
     const segmentEffort: SegmentEffort = {
       id: stravaNativeSegmentEffort.id,
       name: stravaNativeSegmentEffort.name,
+      activityId: stravaNativeSegmentEffort.activity.id,
       elapsedTime: stravaNativeSegmentEffort.elapsed_time,
       movingTime: stravaNativeSegmentEffort.moving_time,
       startDateLocal: stravaNativeSegmentEffort.start_date_local,

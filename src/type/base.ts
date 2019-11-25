@@ -1537,6 +1537,7 @@ export interface Achievement {
 export interface SegmentEffort {
   id: number;
   name: string;
+  activityId: string;
   elapsedTime: number;
   movingTime: number;
   startDateLocal: Date;
