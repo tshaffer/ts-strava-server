@@ -74,7 +74,7 @@ function parseStravaSummaryActivities(stravaSummaryActivities: StravaNativeActiv
     return;
   }
 
-  stravaSummaryActivities.forEach( (stravaNativeActivity: StravaNativeActivity) => {
+  stravaSummaryActivities.forEach((stravaNativeActivity: StravaNativeActivity) => {
 
     console.log(stravaNativeActivity);
 
@@ -120,15 +120,15 @@ export function fetchSummaryActivities(accessToken: string, secondsSinceEpochOfL
     const path = 'athlete/activities?after=' + secondsSinceEpochOfLastActivity.toString();
 
     fetchStravaData(path, accessToken)
-      .then( (stravaSummaryActivities: any[]) => {
+      .then((stravaSummaryActivities: any[]) => {
         const activities = parseStravaSummaryActivities(stravaSummaryActivities);
         resolve(activities);
-    });
+      });
   });
 }
 
 function parseStravaDetailedActivity(stravaDetailedActivity: StravaNativeDetailedActivity): DetailedActivity {
-  
+
   // console.log(stravaDetailedActivity);
 
   const segmentEfforts: SegmentEffort[] = [];
@@ -211,15 +211,44 @@ function parseStravaDetailedActivity(stravaDetailedActivity: StravaNativeDetaile
 }
 
 export function fetchDetailedActivity(accessToken: string, activityId: string): Promise<any> {
+
   return new Promise((resolve) => {
 
     const path = 'activities/' + activityId;
 
     fetchStravaData(path, accessToken)
-      .then( (stravaDetailedActivity: any) => {
+      .then((stravaDetailedActivity: any) => {
         const detailedActivity: DetailedActivity = parseStravaDetailedActivity(stravaDetailedActivity);
         console.log(detailedActivity);
         resolve(detailedActivity);
-    });
+      });
   });
 }
+
+export function fetchStream(accessToken: string, activityId: string): Promise<any> {
+
+  return new Promise((resolve) => {
+
+    const path = 'activities/' + activityId + '/streams/time,latlng,distance,altitude,grade_smooth';
+
+    fetchStravaData(path, accessToken)
+      .then((stravaStreams) => {
+        resolve(stravaStreams);
+      });
+  });
+}
+
+export function fetchAllEfforts(accessToken: string, athleteId: string, segmentId: string): Promise<any> {
+
+  return new Promise((resolve) => {
+
+    const path = 'segments/' + segmentId.toString() + '/all_efforts?athlete_id=' + athleteId.toString();
+
+    fetchStravaData(path, accessToken)
+      .then( (stravaAllEfforts) => {
+        resolve(stravaAllEfforts);
+      });
+  });
+}
+
+// retrieveBaseMapSegments
