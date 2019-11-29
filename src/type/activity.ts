@@ -144,7 +144,7 @@ export interface StravatronSummaryActivity {
   achievementCount: number;
   athleteId: number;
   averageSpeed: number;
-  averageTemp: number;
+  // averageTemp: number;
   averageWatts: number;
   deviceWatts: boolean;
   distance: number;
@@ -162,7 +162,7 @@ export interface StravatronSummaryActivity {
   movingTime: number;
   name: string;
   prCount: number;
-  resource_state: number;
+  resourceState: number;
   startDate: Date;
   startDateLocal: Date;
   startLatitude: number;
@@ -177,4 +177,13 @@ export interface StravatronDetailedActivity extends StravatronSummaryActivity {
   calories: number;
   segmentEfforts: any; // DetailedSegmentEffort
   weightedAverageWatts: number;
+
+  averageCadence: number;
+  averageHeartrate: number;
+  deviceName: string;
+  hasHeartrate: boolean;
+  maxHeartrate: number;
+  maxWatts: number;
+  type: string;
+  utcOffset: number;
 }

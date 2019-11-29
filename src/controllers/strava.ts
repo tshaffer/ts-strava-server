@@ -92,7 +92,7 @@ function transformStravaSummaryActivities(stravaSummaryActivities: StravaNativeS
       achievementCount: stravaNativeActivity.achievement_count,
       athleteId: stravaNativeActivity.athlete.id,
       averageSpeed: stravaNativeActivity.average_speed,
-      averageTemp: stravaNativeActivity.average_temp,
+      // averageTemp: stravaNativeActivity.average_temp,
       averageWatts: stravaNativeActivity.average_watts,
       deviceWatts: null,
       distance: stravaNativeActivity.distance,
@@ -110,7 +110,7 @@ function transformStravaSummaryActivities(stravaSummaryActivities: StravaNativeS
       movingTime: stravaNativeActivity.moving_time,
       name: stravaNativeActivity.name,
       prCount: stravaNativeActivity.pr_count,
-      resource_state: stravaNativeActivity.resource_state,
+      resourceState: stravaNativeActivity.resource_state,
       startDate: stravaNativeActivity.start_date,
       startDateLocal: stravaNativeActivity.start_date_local,
       startLatitude: stravaNativeActivity.start_latitude,
@@ -194,27 +194,52 @@ function transformStravaDetailedActivity(stravaDetailedActivity: StravaNativeDet
     segmentEfforts.push(segmentEffort);
   }
 
+  console.log('poo');
+
   // // TEDTODO - create method for assigning based activity members and use that here and for
   // // summary activities
-  // const detailedActivity: DetailedActivity = {
-  //   id: stravaDetailedActivity.id,
-  //   athleteId: stravaDetailedActivity.athlete.id,
-  //   averageSpeed: stravaDetailedActivity.average_speed,
-  //   description: stravaDetailedActivity.description,
-  //   distance: stravaDetailedActivity.distance,
-  //   elapsedTime: stravaDetailedActivity.elapsed_time,
-  //   kilojoules: stravaDetailedActivity.kilojoules,
-  //   city: stravaDetailedActivity.city,
-  //   maxSpeed: stravaDetailedActivity.max_speed,
-  //   movingTime: stravaDetailedActivity.moving_time,
-  //   name: stravaDetailedActivity.name,
-  //   startDateLocal: stravaDetailedActivity.start_date_local,
-  //   totalElevationGain: stravaDetailedActivity.total_elevation_gain,
-  //   mapPolyline: stravaDetailedActivity.map.polyline,
-  //   averageTemp: stravaDetailedActivity.average_temp,
-  //   averageWatts: stravaDetailedActivity.average_watts,
-  //   segmentEfforts,
-  // }
+  const detailedActivity: StravatronDetailedActivity = {
+    id: stravaDetailedActivity.id,
+    athleteId: stravaDetailedActivity.athlete.id,
+    averageSpeed: stravaDetailedActivity.average_speed,
+    description: stravaDetailedActivity.description,
+    distance: stravaDetailedActivity.distance,
+    elapsedTime: stravaDetailedActivity.elapsed_time,
+    kilojoules: stravaDetailedActivity.kilojoules,
+    city: stravaDetailedActivity.location_city,
+    maxSpeed: stravaDetailedActivity.max_speed,
+    movingTime: stravaDetailedActivity.moving_time,
+    name: stravaDetailedActivity.name,
+    startDateLocal: stravaDetailedActivity.start_date_local,
+    totalElevationGain: stravaDetailedActivity.total_elevation_gain,
+    map: stravaDetailedActivity.map,
+    averageWatts: stravaDetailedActivity.average_watts,
+    segmentEfforts,
+    calories: stravaDetailedActivity.calories,
+    weightedAverageWatts: stravaDetailedActivity.weighted_average_watts,
+    achievementCount: stravaDetailedActivity.achievement_count,
+    deviceWatts: stravaDetailedActivity.device_watts,
+    elevHigh: stravaDetailedActivity.elev_high,
+    elevLow: stravaDetailedActivity.elev_low,
+    endLatlng: stravaDetailedActivity.end_latlng,
+    country: stravaDetailedActivity.location_country,
+    state: stravaDetailedActivity.location_state,
+    prCount: stravaDetailedActivity.pr_count,
+    resourceState: stravaDetailedActivity.resource_state,
+    startDate: stravaDetailedActivity.start_date,
+    startLatitude: stravaDetailedActivity.start_latitude,
+    startLatlng: stravaDetailedActivity.start_latlng,
+    startLongitude: stravaDetailedActivity.start_longitude,
+    timezone: stravaDetailedActivity.timezone,
+    averageCadence: stravaDetailedActivity.average_cadence,
+    averageHeartrate: stravaDetailedActivity.average_heartrate,
+    deviceName: stravaDetailedActivity.device_name,
+    hasHeartrate: stravaDetailedActivity.has_heartrate,
+    maxHeartrate: stravaDetailedActivity.max_heartrate,
+    maxWatts: stravaDetailedActivity.max_watts,
+    type: stravaDetailedActivity.type,
+    utcOffset: stravaDetailedActivity.utc_offset,
+  };
 
   // if (!isNil(stravaDetailedActivity.map) && !isNil(stravaDetailedActivity.map.summary_polyline)) {
   //   detailedActivity.mapSummaryPolyline = stravaDetailedActivity.map.summary_polyline;
@@ -231,7 +256,7 @@ function transformStravaDetailedActivity(stravaDetailedActivity: StravaNativeDet
   // }
 
   // return detailedActivity;
-  return null;
+  return detailedActivity;
 }
 
 
