@@ -170,11 +170,11 @@ export interface StravatronSummaryActivity {
   startLongitude: number;
   timezone: string;
   totalElevationGain: number;
-  weightedAverageWatts: number;
 }
 
 export interface StravatronDetailedActivity extends StravatronSummaryActivity {
   description: string;
   calories: number;
-  segment_efforts: any; // DetailedSegmentEffort
+  segmentEfforts: any; // DetailedSegmentEffort
+  weightedAverageWatts: number;
 }

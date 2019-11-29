@@ -117,7 +117,7 @@ export interface StravatronAthlete {
   email: string;
 }
 
-export interface StravatronSegment {
+export interface StravatronSummarySegment {
   id: number;
   name: string;
   distance: number;
@@ -125,23 +125,33 @@ export interface StravatronSegment {
   maximumGrade: number;
   elevationHigh: number;
   elevationLow: number;
+  activityType: string;
+  climbCategory: number;
+  startLatlng: StravaNativeLatLng;
+  endLatlng: StravaNativeLatLng;
 }
 
 export interface StravatronAchievement {
   type: string;
   rank: number;
+  typeId: number;
 }
 
-export interface SegmentEffort {
+export interface StravatronSegmentEffort {
   id: number;
   name: string;
-  activityId: string;
+  activityId: number;
   elapsedTime: number;
   movingTime: number;
   startDateLocal: Date;
   distance: number;
   averageWatts: number;
-  segment: StravatronSegment;
+  segment: StravatronSummarySegment;
   prRank: number;
   achievements: StravatronAchievement[];
+  averageCadence: number;
+  averageHeartrate: number;
+  deviceWatts: boolean;
+  maxHeartrate: number;
+  startDate: Date;
 }

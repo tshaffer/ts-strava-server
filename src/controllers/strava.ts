@@ -3,6 +3,7 @@ import axios from 'axios';
 import { isNil } from 'lodash';
 
 import { StravatronSummaryActivity, StravaNativeSummaryActivity, StravatronDetailedActivity, StravaNativeDetailedActivity } from '../type/activity';
+import { StravatronSegmentEffort, StravatronSummarySegment, StravatronAchievement } from '../type';
 
 export function retrieveAccessToken() {
 
@@ -117,7 +118,7 @@ function transformStravaSummaryActivities(stravaSummaryActivities: StravaNativeS
       startLongitude: stravaNativeActivity.start_longitude,
       timezone: stravaNativeActivity.timezone,
       totalElevationGain: stravaNativeActivity.total_elevation_gain,
-      weightedAverageWatts: stravaNativeActivity.weighted_average_watts,
+      // weightedAverageWatts: stravaNativeActivity.weighted_average_watts,
     };
 
     activities.push(activity);
@@ -136,7 +137,6 @@ export function fetchDetailedActivity(accessToken: string, activityId: string): 
     fetchStravaData(path, accessToken)
       .then((stravaDetailedActivity: any) => {
         const detailedActivity: StravatronDetailedActivity = transformStravaDetailedActivity(stravaDetailedActivity);
-        console.log(detailedActivity);
         resolve(detailedActivity);
       });
   });
@@ -144,47 +144,55 @@ export function fetchDetailedActivity(accessToken: string, activityId: string): 
 
 function transformStravaDetailedActivity(stravaDetailedActivity: StravaNativeDetailedActivity): StravatronDetailedActivity {
 
-  console.log(stravaDetailedActivity);
+  const segmentEfforts: StravatronSegmentEffort[] = [];
 
-  // const segmentEfforts: SegmentEffort[] = [];
+  for (const stravaNativeSegmentEffort of stravaDetailedActivity.segment_efforts) {
 
-  // for (const stravaNativeSegmentEffort of stravaDetailedActivity.segment_efforts) {
+    const achievements: StravatronAchievement[] = [];
+    for (const stravaAchievement of stravaNativeSegmentEffort.achievements) {
+      const achievement: StravatronAchievement = {
+        type: stravaAchievement.type,
+        rank: stravaAchievement.rank,
+        typeId: stravaAchievement.type_id,
+      };
+      achievements.push(achievement);
+    }
+  
+    const segment: StravatronSummarySegment = {
+      id: stravaNativeSegmentEffort.segment.id,
+      name: stravaNativeSegmentEffort.segment.name,
+      distance: stravaNativeSegmentEffort.segment.distance,
+      averageGrade: stravaNativeSegmentEffort.segment.average_grade,
+      maximumGrade: stravaNativeSegmentEffort.segment.maximum_grade,
+      elevationHigh: stravaNativeSegmentEffort.segment.elevation_high,
+      elevationLow: stravaNativeSegmentEffort.segment.elevation_low,
+      activityType: stravaNativeSegmentEffort.segment.activity_type,
+      climbCategory: stravaNativeSegmentEffort.segment.climb_category,
+      startLatlng: stravaNativeSegmentEffort.segment.start_latlng,
+      endLatlng: stravaNativeSegmentEffort.segment.end_latlng,
+    };
 
-  //   const achievements: StravatronAchievement[] = [];
-  //   for (const stravaAchievement of stravaNativeSegmentEffort.achievements) {
-  //     const achievement: StravatronAchievement = {
-  //       type: stravaAchievement.type,
-  //       rank: stravaAchievement.rank,
-  //     };
-  //     achievements.push(achievement);
-  //   }
+    const segmentEffort: StravatronSegmentEffort = {
+      id: stravaNativeSegmentEffort.id,
+      name: stravaNativeSegmentEffort.name,
+      activityId: stravaNativeSegmentEffort.activity.id,
+      elapsedTime: stravaNativeSegmentEffort.elapsed_time,
+      movingTime: stravaNativeSegmentEffort.moving_time,
+      startDateLocal: stravaNativeSegmentEffort.start_date_local,
+      distance: stravaNativeSegmentEffort.distance,
+      averageWatts: stravaNativeSegmentEffort.average_watts,
+      segment,
+      prRank: stravaNativeSegmentEffort.pr_rank,
+      achievements,
+      averageCadence: stravaNativeSegmentEffort.average_cadence,
+      averageHeartrate: stravaNativeSegmentEffort.average_heartrate,
+      deviceWatts: stravaNativeSegmentEffort.device_watts,
+      maxHeartrate: stravaNativeSegmentEffort.max_heartrate,
+      startDate: stravaNativeSegmentEffort.start_date,
+    };
 
-  //   const segment: StravatronSegment = {
-  //     id: stravaNativeSegmentEffort.segment.id,
-  //     name: stravaNativeSegmentEffort.segment.name,
-  //     distance: stravaNativeSegmentEffort.segment.distance,
-  //     averageGrade: stravaNativeSegmentEffort.segment.average_grade,
-  //     maximumGrade: stravaNativeSegmentEffort.segment.maximum_grade,
-  //     elevationHigh: stravaNativeSegmentEffort.segment.elevation_high,
-  //     elevationLow: stravaNativeSegmentEffort.segment.elevation_low,
-  //   };
-
-  //   const segmentEffort: SegmentEffort = {
-  //     id: stravaNativeSegmentEffort.id,
-  //     name: stravaNativeSegmentEffort.name,
-  //     activityId: stravaNativeSegmentEffort.activity.id,
-  //     elapsedTime: stravaNativeSegmentEffort.elapsed_time,
-  //     movingTime: stravaNativeSegmentEffort.moving_time,
-  //     startDateLocal: stravaNativeSegmentEffort.start_date_local,
-  //     distance: stravaNativeSegmentEffort.distance,
-  //     averageWatts: stravaNativeSegmentEffort.average_watts,
-  //     segment,
-  //     prRank: stravaNativeSegmentEffort.pr_rank,
-  //     achievements,
-  //   };
-
-  //   segmentEfforts.push(segmentEffort);
-  // }
+    segmentEfforts.push(segmentEffort);
+  }
 
   // // TEDTODO - create method for assigning based activity members and use that here and for
   // // summary activities
@@ -206,7 +214,7 @@ function transformStravaDetailedActivity(stravaDetailedActivity: StravaNativeDet
   //   averageTemp: stravaDetailedActivity.average_temp,
   //   averageWatts: stravaDetailedActivity.average_watts,
   //   segmentEfforts,
-  // };
+  // }
 
   // if (!isNil(stravaDetailedActivity.map) && !isNil(stravaDetailedActivity.map.summary_polyline)) {
   //   detailedActivity.mapSummaryPolyline = stravaDetailedActivity.map.summary_polyline;
