@@ -1,43 +1,55 @@
-import { StravaNativeSegmentEffort, StravaNativeAthlete, StravaNativeLatLng, StravaNativeMap } from "./base";
+import { StravaNativeSummarySegmentEffort, StravaNativeSummaryAthlete, StravaNativeLatLng, StravaNativePolylineMap, StravaNativeDetailedSegmentEffort } from "./base";
+
+export interface StravaNativeMetaActivity {
+  id: number;
+  resource_state: number;
+}
 
 // https://developers.strava.com/docs/reference/#api-models-SummaryActivity
-export interface StravaNativeActivity {
+// TEDTODO - some of the properties here may in fact only be in the detailed activity
+export interface StravaNativeSummaryActivity {
   achievement_count: number;
-  athlete: StravaNativeAthlete;
+  athlete: any; // MetaAthlete??, but really { id, resource_state }
   athlete_count: number;
+  average_cadence: number;
+  average_heartrate: number;
   average_speed: number;
   average_temp: number;
   average_watts: number;
   comment_count: number;
   commute: boolean;
   device_watts: boolean;
-  display_hide_heartrate_option: number;
+  display_hide_heartrate_option: boolean;
   distance: number;
   elapsed_time: number;
   elev_high: number;
   elev_low: number;
   end_latlng: StravaNativeLatLng;
   external_id: string;
-  flagged: number;
-  from_accepted_tag: number;
+  flagged: boolean;
+  from_accepted_tag: boolean;
   gear_id: string;
-  has_heartrate: number;
-  has_kudoed: number;
-  heartrate_opt_out: number;
+  has_heartrate: boolean;
+  has_kudoed: boolean;
+  heartrate_opt_out: boolean;
   id: number;
   kilojoules: number;
   kudos_count: number;
   location_city: string;
   location_country: string;
   location_state: string;
-  manual: number;
-  map: StravaNativeMap;
+  manual: boolean;
+  map: StravaNativePolylineMap;
   max_speed: number;
+  max_heartrate: number;
+  max_watts: number;
   moving_time: number;
   name: string;
+  perceived_exertion: any;
   photo_count: number;
+  prefer_perceived_exertion: any;
   pr_count: number;
-  private: number;
+  private: boolean;
   resource_state: number;
   start_date: Date;
   start_date_local: Date;
@@ -58,12 +70,12 @@ export interface StravaNativeActivity {
 }
 
 // https://developers.strava.com/docs/reference/#api-models-DetailedActivity
-export interface StravaNativeDetailedActivity extends StravaNativeActivity {
+export interface StravaNativeDetailedActivity extends StravaNativeSummaryActivity {
   description: string;
   photos: any; // PhotosSummary
   gear: string; // SummaryGear
   calories: number;
-  segment_efforts: any; // DetailedSegmentEffort
+  segment_efforts: StravaNativeDetailedSegmentEffort[]; // DetailedSegmentEffort
   device_name: string;
   embed_token: string;
   splits_metric: any; // Split
@@ -72,10 +84,9 @@ export interface StravaNativeDetailedActivity extends StravaNativeActivity {
   best_efforts: any; // DetailedSegmentEffort
 }
 
-export interface StravatronActivity {
-  id: number;
+export interface StravatronSummaryActivity {
   achievementCount: number;
-  athleteId: number; // TEDTODO ??
+  athleteId: number;
   averageSpeed: number;
   averageTemp: number;
   averageWatts: number;
@@ -84,12 +95,13 @@ export interface StravatronActivity {
   elapsedTime: number;
   elevHigh: number;
   elevLow: number;
-  end_latlng: StravaNativeLatLng;
+  endLatlng: StravaNativeLatLng;
+  id: number;
   kilojoules: number;
   city: string;
   country: string;
   state: string;
-  map: StravaNativeMap;
+  map: StravaNativePolylineMap;
   maxSpeed: number;
   movingTime: number;
   name: string;
@@ -100,16 +112,13 @@ export interface StravatronActivity {
   startLatitude: number;
   startLatlng: StravaNativeLatLng;
   startLongitude: number;
-  timezone: string; // ??
+  timezone: string;
   totalElevationGain: number;
-
-
-  description: string;
-  city: string;
-  mapSummaryPolyline?: string;
-  maxSpeed: number;
-  movingTime: number;
-  startDateLocal: string;
-  totalElevationGain: number;
+  weightedAverageWatts: number;
 }
 
+export interface StravatronDetailedActivity extends StravatronSummaryActivity {
+  description: string;
+  calories: number;
+  segment_efforts: any; // DetailedSegmentEffort
+}

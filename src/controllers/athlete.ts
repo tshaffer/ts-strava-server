@@ -1,14 +1,14 @@
 import { Request, Response } from 'express';
 
 import {
-  Athlete,
+  StravatronAthlete,
 } from '../type';
 
 export function getAthletes(request: Request, response: Response) {
   
   console.log('getAthletes');
 
-  const athletes: Athlete[] = [
+  const athletes: StravatronAthlete[] = [
     {
       id: '2843574',
       nickname: 'Dad',
