@@ -123,6 +123,12 @@ export interface StravatronSummarySegment {
   endLatlng: StravaNativeLatLng;
 }
 
+export interface StravatronDetailedSegment extends StravatronSummarySegment {
+  totalElevationGain: number;
+  map: StravaNativePolylineMap;
+  effortCount: number;
+}
+
 export interface StravatronAchievement {
   type: string;
   rank: number;

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { isNil } from 'lodash';
 
 import { StravatronSummaryActivity, StravaNativeSummaryActivity, StravatronDetailedActivity, StravaNativeDetailedActivity } from '../type/activity';
-import { StravatronSegmentEffort, StravatronSummarySegment, StravatronAchievement } from '../type';
+import { StravatronSegmentEffort, StravatronSummarySegment, StravatronAchievement, StravaNativeDetailedSegment, StravaNativeSummarySegment, StravatronDetailedSegment } from '../type';
 
 export function retrieveAccessToken() {
 
@@ -12,7 +12,7 @@ export function retrieveAccessToken() {
   const endPoint = 'oauth/token';
   const path = serverUrl + apiPrefix + endPoint;
 
-  // -d "client_id=2055" -d "client_secret=85f821429c9da1ef02b627058119a4253eafd16d" -d "grant_type=refresh_token" -d "refresh_token=ca65f7aff433b44f351ff04ce0b33085bb0a0ed6" 
+  // -d 'client_id=2055' -d 'client_secret=85f821429c9da1ef02b627058119a4253eafd16d' -d 'grant_type=refresh_token' -d 'refresh_token=ca65f7aff433b44f351ff04ce0b33085bb0a0ed6' 
 
   return axios.post(path,
     {
@@ -80,7 +80,7 @@ function transformStravaSummaryActivities(stravaSummaryActivities: StravaNativeS
 
   if (!(stravaSummaryActivities instanceof Array)) {
     console.log('stravaSummaryActivities not array');
-    // reject("error");
+    // reject('error');
     return;
   }
 
@@ -156,7 +156,7 @@ function transformStravaDetailedActivity(stravaDetailedActivity: StravaNativeDet
       };
       achievements.push(achievement);
     }
-  
+
     const segment: StravatronSummarySegment = {
       id: stravaNativeSegmentEffort.segment.id,
       name: stravaNativeSegmentEffort.segment.name,
@@ -282,6 +282,40 @@ export function fetchAllEfforts(accessToken: string, athleteId: string, segmentI
         resolve(stravaAllEfforts);
       });
   });
+}
+
+export function fetchSegment(accessToken: string, segmentId: number): Promise<StravatronDetailedSegment> {
+
+  return new Promise((resolve) => {
+
+    const path = 'segments/' + segmentId.toString();
+
+    fetchStravaData(path, accessToken)
+      .then((stravaDetailedSegment: StravaNativeDetailedSegment) => {
+        const stravatronDetailedSegment: StravatronDetailedSegment = transformStravaSegment(stravaDetailedSegment);
+        resolve(stravatronDetailedSegment);
+      });
+  });
+}
+
+function transformStravaSegment(stravaSegment: StravaNativeDetailedSegment): StravatronDetailedSegment {
+  const stravatronDetailedSegment: StravatronDetailedSegment = {
+    id: stravaSegment.id,
+    name: stravaSegment.name,
+    distance: stravaSegment.distance,
+    averageGrade: stravaSegment.average_grade,
+    maximumGrade: stravaSegment.maximum_grade,
+    elevationHigh: stravaSegment.elevation_high,
+    elevationLow: stravaSegment.elevation_low,
+    activityType: stravaSegment.activity_type,
+    climbCategory: stravaSegment.climb_category,
+    startLatlng: stravaSegment.start_latlng,
+    endLatlng: stravaSegment.end_latlng,
+    totalElevationGain: stravaSegment.total_elevation_gain,
+    map: stravaSegment.map,
+    effortCount: stravaSegment.effort_count,
+  };
+  return stravatronDetailedSegment;
 }
 
 // retrieveBaseMapSegments

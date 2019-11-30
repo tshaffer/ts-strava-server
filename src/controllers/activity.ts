@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 
 import { fetchSummaryActivities, retrieveAccessToken, fetchDetailedActivity } from '../controllers';
-import { StravatronDetailedActivity, StravatronSegmentEffort, StravatronDetailedActivityAttributes, StravatronStreamData, StravatronStream, StravatronSummarySegment } from '../type';
-import { fetchStream } from './strava';
+import { StravaNativeDetailedSegment, StravatronDetailedActivity, StravatronSegmentEffort, StravatronDetailedActivityAttributes, StravatronStreamData, StravatronStream, StravatronSummarySegment } from '../type';
+import { fetchStream, fetchSegment } from './strava';
 
 export function getActivities(request: Request, response: Response) {
   console.log('getActivities');
@@ -85,7 +85,7 @@ export function getDetailedActivity(request: Request, response: Response) {
 
           const segments: StravatronSummarySegment[] = [];
           const segmentIds: number[] = [];
-          const segmentEfforts = [];
+          const segmentEfforts: StravatronSegmentEffort[] = [];
 
           // segment efforts for each segment in this activity
 
@@ -112,18 +112,29 @@ export function getDetailedActivity(request: Request, response: Response) {
             // });
           }
 
-          retSegments = segments;
-          retSegmentsEfforts = segmentEfforts;
+          // get segments
+          const fetchSegmentPromises: Array<Promise<any>> = [];
+          for (const segmentId of segmentIds) {
+            fetchSegmentPromises.push(fetchSegment(accessToken, segmentId));
+          }
 
-          // retrieve all efforts for each of the segments in this activity
-
-          const retData: any = {
-            detailedActivityAttributes: retDetailedActivityAttributes,
-            locationData: retLocationData,
-            segments: retSegments,
-            segmentEfforts: retSegmentsEfforts,
-          };
-          response.json(retData);
+          Promise.all(fetchSegmentPromises).then((detailedSegments: StravaNativeDetailedSegment[]) => {
+            
+            retSegments = segments;
+            retSegmentsEfforts = segmentEfforts;
+  
+            // retrieve all efforts for each of the segments in this activity
+  
+            const retData: any = {
+              detailedActivityAttributes: retDetailedActivityAttributes,
+              locationData: retLocationData,
+              segments: retSegments,
+              detailedSegments,
+              segmentEfforts: retSegmentsEfforts,
+            };
+            response.json(retData);
+            });
+          
         });
     })
     .catch((err: Error) => {
