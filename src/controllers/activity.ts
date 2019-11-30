@@ -83,9 +83,11 @@ export function getDetailedActivity(request: Request, response: Response) {
 
           // TEDTODO - the following could be done independent from fetchStream
 
-          let segments: StravatronSummarySegment[] = [];
-          let segmentIds: number[] = [];
-          let segmentEfforts = [];
+          const segments: StravatronSummarySegment[] = [];
+          const segmentIds: number[] = [];
+          const segmentEfforts = [];
+
+          // segment efforts for each segment in this activity
 
           for (const stravaSegmentEffort of stravaDetailedActivity.segmentEfforts) {
 
@@ -112,6 +114,8 @@ export function getDetailedActivity(request: Request, response: Response) {
 
           retSegments = segments;
           retSegmentsEfforts = segmentEfforts;
+
+          // retrieve all efforts for each of the segments in this activity
 
           const retData: any = {
             detailedActivityAttributes: retDetailedActivityAttributes,
