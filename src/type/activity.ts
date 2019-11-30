@@ -1,4 +1,4 @@
-import { StravaNativeSummarySegmentEffort, StravaNativeSummaryAthlete, StravaNativeLatLng, StravaNativePolylineMap, StravaNativeDetailedSegmentEffort, StravaNativeMetaAthlete } from "./base";
+import { StravaNativeSummarySegmentEffort, StravaNativeSummaryAthlete, StravaNativeLatLng, StravaNativePolylineMap, StravaNativeDetailedSegmentEffort, StravaNativeMetaAthlete, StravatronSegmentEffort } from "./base";
 
 export interface StravaNativeMetaActivity {
   id: number;
@@ -175,7 +175,7 @@ export interface StravatronSummaryActivity {
 export interface StravatronDetailedActivity extends StravatronSummaryActivity {
   description: string;
   calories: number;
-  segmentEfforts: any; // DetailedSegmentEffort
+  segmentEfforts: StravatronSegmentEffort[];
   weightedAverageWatts: number;
 
   averageCadence: number;
@@ -186,4 +186,11 @@ export interface StravatronDetailedActivity extends StravatronSummaryActivity {
   maxWatts: number;
   type: string;
   utcOffset: number;
+}
+
+export interface StravatronDetailedActivityAttributes {
+  calories: number;
+  segmentEfforts: StravatronSegmentEffort[];
+  map: StravaNativePolylineMap;
+  streams: any[];
 }

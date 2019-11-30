@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 
 import { fetchSummaryActivities, retrieveAccessToken, fetchDetailedActivity } from '../controllers';
+import { StravatronDetailedActivity, StravatronSegmentEffort, StravatronDetailedActivityAttributes, StravatronStreamData, StravatronStream, StravatronSummarySegment } from '../type';
+import { fetchStream } from './strava';
 
 export function getActivities(request: Request, response: Response) {
   console.log('getActivities');
@@ -49,15 +51,122 @@ export function getActivities(request: Request, response: Response) {
 export function getDetailedActivity(request: Request, response: Response) {
 
   const activityId: string = request.query.activityId;
+  let stravaDetailedActivity: StravatronDetailedActivity;
+
+  let retDetailedActivityAttributes: StravatronDetailedActivityAttributes;
+  let retLocationData: any[] = [];
+  let retSegments: StravatronSummarySegment[] = [];
+  let retSegmentsEfforts: StravatronSegmentEffort[] = [];
 
   return retrieveAccessToken()
     .then((accessToken: any) => {
       fetchDetailedActivity(accessToken, activityId)
-        .then((detailedActivity: any) => {
-          response.json(detailedActivity);
+        .then((detailedActivity: StravatronDetailedActivity) => {
+          // response.json(detailedActivity);
+          stravaDetailedActivity = detailedActivity;
+          return fetchStream(accessToken, activityId);
+        }).then((stravaStreams: any[]) => {
+
+          retDetailedActivityAttributes =
+            {
+              calories: stravaDetailedActivity.calories,
+              segmentEfforts: stravaDetailedActivity.segmentEfforts,
+              map: stravaDetailedActivity.map,
+              streams: stravaStreams,
+            };
+
+          // add streams to the db
+          const stravatronStreamData: StravatronStreamData = getStreamData(stravaStreams);
+          retLocationData = stravatronStreamData.locationData;
+
+          // dispatch(setActivityLocations(locationData));
+
+          // TEDTODO - the following could be done independent from fetchStream
+
+          let segments: StravatronSummarySegment[] = [];
+          let segmentIds: number[] = [];
+          let segmentEfforts = [];
+
+          for (const stravaSegmentEffort of stravaDetailedActivity.segmentEfforts) {
+
+            const segment: StravatronSummarySegment = stravaSegmentEffort.segment;
+            segments.push(segment);
+
+            segmentIds.push(segment.id);
+            segmentEfforts.push(stravaSegmentEffort);
+
+            //   // add segment, segmentEffort to db
+            //   const addSegmentPromise = dbServices.addSegment(segment);
+            //   addSegmentPromise.then( () => {
+            //   }, (_) => {
+            //     // console.log("segment addition failed:", activityId);
+            //   });
+
+            //   const addSegmentEffortPromise = dbServices.addSegmentEffort(segmentEffort);
+            //   addSegmentEffortPromise.then( () => {
+            //   }, (_) => {
+            //     // console.log("segmentEffort addition failed:", segmentEffort.activityId);
+            //   });
+            // });
+          }
+
+          retSegments = segments;
+          retSegmentsEfforts = segmentEfforts;
+
+          const retData: any = {
+            detailedActivityAttributes: retDetailedActivityAttributes,
+            locationData: retLocationData,
+            segments: retSegments,
+            segmentEfforts: retSegmentsEfforts,
+          };
+          response.json(retData);
         });
     })
     .catch((err: Error) => {
       console.log('accessToken error: ', err);
     });
+
+
+}
+
+function getStreamData(stravaStreams: StravatronStream[]): StravatronStreamData {
+
+  let timeData: any[];
+  let locationData: any[];
+  let elevationData: any[];
+  let distanceData: any[];
+  let gradientData: any[];
+
+  for (const stravaStream of stravaStreams) {
+
+    switch (stravaStream.type) {
+      case 'time':
+        timeData = stravaStream.data;
+        break;
+      case 'distance':
+        distanceData = stravaStream.data;
+        break;
+      case 'altitude':
+        elevationData = stravaStream.data;
+        break;
+      case 'latlng':
+        locationData = stravaStream.data;
+        break;
+      case 'grade_smooth':
+        gradientData = stravaStream.data;
+        break;
+    }
+
+  }
+
+  const streamData: StravatronStreamData =
+  {
+    timeData,
+    locationData,
+    elevationData,
+    distanceData,
+    gradientData,
+  };
+
+  return streamData;
 }

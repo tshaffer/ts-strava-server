@@ -127,8 +127,7 @@ function transformStravaSummaryActivities(stravaSummaryActivities: StravaNativeS
   return activities;
 }
 
-
-export function fetchDetailedActivity(accessToken: string, activityId: string): Promise<any> {
+export function fetchDetailedActivity(accessToken: string, activityId: string): Promise<StravatronDetailedActivity> {
 
   return new Promise((resolve) => {
 
@@ -258,7 +257,6 @@ function transformStravaDetailedActivity(stravaDetailedActivity: StravaNativeDet
   // return detailedActivity;
   return detailedActivity;
 }
-
 
 export function fetchStream(accessToken: string, activityId: string): Promise<any> {
 

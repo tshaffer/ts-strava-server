@@ -101,14 +101,6 @@ export interface StravaNativeDetailedSegmentEffort extends StravaNativeSummarySe
   hidden: boolean;
 }
 
-
-
-
-
-
-
-
-
 export interface StravatronAthlete {
   id: string;
   nickname: string;
@@ -154,4 +146,20 @@ export interface StravatronSegmentEffort {
   deviceWatts: boolean;
   maxHeartrate: number;
   startDate: Date;
+}
+
+export interface StravatronStream {
+  data: any[];
+  original_size: number;
+  resolution: string;
+  series_type: string;
+  type: string;
+}
+
+export interface StravatronStreamData {
+  timeData: any[];
+  locationData: any[];
+  elevationData: any[];
+  distanceData: any[];
+  gradientData: any[];
 }
