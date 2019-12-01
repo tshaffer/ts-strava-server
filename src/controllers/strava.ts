@@ -271,7 +271,7 @@ export function fetchStream(accessToken: string, activityId: string): Promise<an
   });
 }
 
-export function fetchAllEfforts(accessToken: string, athleteId: string, segmentId: string): Promise<any> {
+export function fetchAllEfforts(accessToken: string, athleteId: string, segmentId: number): Promise<StravatronDetailedSegment[]> {
 
   return new Promise((resolve) => {
 
