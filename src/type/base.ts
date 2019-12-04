@@ -53,7 +53,7 @@ export interface StravaNativeSummarySegment {
   state: string;
   country: string;
   private: boolean;
-  athlete_pr_effort: StravaNativeSummarySegmentEffort;
+  athlete_pr_effort?: StravaNativeSummarySegmentEffort;
   resource_state: number;
   starred: boolean;
 }
@@ -78,7 +78,7 @@ export interface StravaNativeSummarySegmentEffort {
   start_date: Date;
   start_date_local: Date;
   distance: number;
-  is_kom: boolean;
+  is_kom?: boolean;
 }
 
 // https://developers.strava.com/docs/reference/#api-models-DetailedSegmentEffort
@@ -121,6 +121,7 @@ export interface StravatronSummarySegment {
   climbCategory: number;
   startLatlng: StravaNativeLatLng;
   endLatlng: StravaNativeLatLng;
+  athletePrEffort?: any; // ****
 }
 
 export interface StravatronDetailedSegment extends StravatronSummarySegment {
@@ -152,6 +153,7 @@ export interface StravatronSegmentEffort {
   deviceWatts: boolean;
   maxHeartrate: number;
   startDate: Date;
+  komRank?: number;
 }
 
 export interface StravatronStream {
