@@ -3,7 +3,7 @@ import axios from 'axios';
 import { isNil } from 'lodash';
 
 import { StravatronSummaryActivity, StravaNativeSummaryActivity, StravatronDetailedActivity, StravaNativeDetailedActivity } from '../type/activity';
-import { StravatronSegmentEffort, StravatronSummarySegment, StravatronAchievement, StravaNativeDetailedSegment, StravaNativeSummarySegment, StravatronDetailedSegment } from '../type';
+import { StravatronSegmentEffort, StravatronSummarySegment, StravatronAchievement, StravaNativeDetailedSegment, StravaNativeSummarySegment, StravatronDetailedSegment, StravaNativeStream, StravatronStream, StravatronStreamData } from '../type';
 
 export function retrieveAccessToken() {
 
@@ -85,8 +85,6 @@ function transformStravaSummaryActivities(stravaSummaryActivities: StravaNativeS
   }
 
   stravaSummaryActivities.forEach((stravaNativeActivity: StravaNativeSummaryActivity) => {
-
-    console.log(stravaNativeActivity);
 
     const activity: StravatronSummaryActivity = {
       achievementCount: stravaNativeActivity.achievement_count,
@@ -193,7 +191,6 @@ function transformStravaDetailedActivity(stravaDetailedActivity: StravaNativeDet
     segmentEfforts.push(segmentEffort);
   }
 
-  console.log('poo');
 
   // // TEDTODO - create method for assigning based activity members and use that here and for
   // // summary activities
@@ -258,17 +255,33 @@ function transformStravaDetailedActivity(stravaDetailedActivity: StravaNativeDet
   return detailedActivity;
 }
 
-export function fetchStream(accessToken: string, activityId: string): Promise<any> {
+export function fetchStreams(accessToken: string, activityId: string): Promise<StravatronStream[]> {
 
   return new Promise((resolve) => {
 
     const path = 'activities/' + activityId + '/streams/time,latlng,distance,altitude,grade_smooth,heartrate,cadence,watts';
 
     fetchStravaData(path, accessToken)
-      .then((stravaStreams) => {
-        resolve(stravaStreams);
+      .then((stravaStreams: StravaNativeStream[]) => {
+        const stravatronStreams: StravatronStream[] = transformStravaStreams(stravaStreams);
+        resolve(stravatronStreams);
       });
   });
+}
+
+function transformStravaStreams(stravaNativeStreams: StravaNativeStream[]): StravatronStream[] {
+
+  const stravatronStreams: StravatronStream[] = [];
+  for (const stravaNativeStream of stravaNativeStreams) {
+    stravatronStreams.push({
+      data: stravaNativeStream.data,
+      originalSize: stravaNativeStream.original_size,
+      resolution: stravaNativeStream.resolution,
+      seriesType: stravaNativeStream.series_type,
+      type: stravaNativeStream.type,
+    })
+  }
+  return stravatronStreams;
 }
 
 export function fetchAllEfforts(accessToken: string, athleteId: string, segmentId: number): Promise<StravatronDetailedSegment[]> {
@@ -278,7 +291,7 @@ export function fetchAllEfforts(accessToken: string, athleteId: string, segmentI
     const path = 'segments/' + segmentId.toString() + '/all_efforts?athlete_id=' + athleteId.toString();
 
     fetchStravaData(path, accessToken)
-      .then((stravaAllEfforts) => {   // it looks like it si getting StravaNativeDetailedSegmentEffort[] and it needs to transform them
+      .then((stravaAllEfforts) => {   // it looks like it is getting StravaNativeDetailedSegmentEffort[] and it needs to transform them
         resolve(stravaAllEfforts);
       });
   });
@@ -292,8 +305,6 @@ export function fetchSegment(accessToken: string, segmentId: number): Promise<St
 
     fetchStravaData(path, accessToken)
       .then((stravaDetailedSegment: StravaNativeDetailedSegment) => {
-        console.log('fetchSegment');
-        console.log(stravaDetailedSegment);
         const stravatronDetailedSegment: StravatronDetailedSegment = transformStravaSegment(stravaDetailedSegment);
         resolve(stravatronDetailedSegment);
       });

@@ -108,6 +108,14 @@ export interface StravaNativeDetailedSegmentEffort extends StravaNativeSummarySe
   hidden?: boolean;
 }
 
+export interface StravaNativeStream {
+  data: any[];
+  original_size: number;
+  resolution: string;
+  series_type: string;
+  type: string;
+}
+
 export interface StravatronAthlete {
   id: string;
   nickname: string;
@@ -166,9 +174,9 @@ export interface StravatronSegmentEffort {
 // **** these are really StravaNative objects - need to do transformation
 export interface StravatronStream {
   data: any[];
-  original_size: number;
+  originalSize: number;
   resolution: string;
-  series_type: string;
+  seriesType: string;
   type: string;
 }
 
@@ -178,4 +186,7 @@ export interface StravatronStreamData {
   elevationData: any[];
   distanceData: any[];
   gradientData: any[];
+  cadenceData: any[];
+  heartrateData: any[];
+  wattsData: any[];
 }

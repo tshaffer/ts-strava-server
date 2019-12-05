@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 
 import { fetchSummaryActivities, retrieveAccessToken, fetchDetailedActivity } from '../controllers';
 import { StravaNativeDetailedSegment, StravatronDetailedActivity, StravatronSegmentEffort, StravatronDetailedActivityAttributes, StravatronStreamData, StravatronStream, StravatronSummarySegment, StravaNativeDetailedSegmentEffort, StravatronDetailedSegment } from '../type';
-import { fetchStream, fetchSegment, fetchAllEfforts } from './strava';
+import { fetchStreams, fetchSegment, fetchAllEfforts } from './strava';
 
 export function getActivities(request: Request, response: Response) {
   console.log('getActivities');
@@ -64,8 +64,8 @@ export function getDetailedActivity(request: Request, response: Response) {
         .then((detailedActivity: StravatronDetailedActivity) => {
           // response.json(detailedActivity);
           stravaDetailedActivity = detailedActivity;
-          return fetchStream(accessToken, activityId);
-        }).then((stravaStreams: any[]) => {
+          return fetchStreams(accessToken, activityId);
+        }).then((stravaStreams: StravatronStream[]) => {
 
           retDetailedActivityAttributes =
             {
@@ -143,7 +143,6 @@ export function getDetailedActivity(request: Request, response: Response) {
 
                     // convert to stravatron segmentEfforts
                     allEffortsForSegment.forEach((stravaSegmentEffort: StravaNativeDetailedSegmentEffort) => {
-                      console.log(stravaSegmentEffort);
 
                       const stravatronSummarySegment: StravatronSummarySegment = {
                         id: stravaSegmentEffort.segment.id,
@@ -161,7 +160,7 @@ export function getDetailedActivity(request: Request, response: Response) {
 
                       const achievements: any[] = [];
                       for (const achievement of stravaSegmentEffort.achievements) {
-                        achievements.push( {
+                        achievements.push({
                           rank: achievement.rank,
                           type: achievement.type,
                           typeId: achievement.type_id,
@@ -232,6 +231,9 @@ function getStreamData(stravaStreams: StravatronStream[]): StravatronStreamData 
   let elevationData: any[];
   let distanceData: any[];
   let gradientData: any[];
+  let cadenceData: any[];
+  let heartrateData: any[];
+  let wattsData: any[];
 
   for (const stravaStream of stravaStreams) {
 
@@ -251,8 +253,16 @@ function getStreamData(stravaStreams: StravatronStream[]): StravatronStreamData 
       case 'grade_smooth':
         gradientData = stravaStream.data;
         break;
+      case 'cadence':
+        cadenceData = stravaStream.data;
+        break;
+      case 'heartrate':
+        heartrateData = stravaStream.data;
+        break;
+      case 'watts':
+        wattsData = stravaStream.data;
+        break;
     }
-
   }
 
   const streamData: StravatronStreamData =
@@ -262,6 +272,9 @@ function getStreamData(stravaStreams: StravatronStream[]): StravatronStreamData 
     elevationData,
     distanceData,
     gradientData,
+    cadenceData,
+    heartrateData,
+    wattsData,
   };
 
   return streamData;
