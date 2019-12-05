@@ -14,6 +14,12 @@ export interface StravaNativeSummaryAthlete {
   // many others
 }
 
+export interface AthleteSegmentStats {
+  effort_count: number;
+  pr_date: Date;
+  pr_elapsed_time: number;
+}
+
 export interface StravaNativeAchievement {
   rank: number;
   type: string;
@@ -49,7 +55,7 @@ export interface StravaNativeSummarySegment {
   start_longitude: number;
   end_longitude: number;
   climb_category: number;
-  city: string;
+  city?: string;
   state: string;
   country: string;
   private: boolean;
@@ -63,11 +69,12 @@ export interface StravaNativeDetailedSegment extends StravaNativeSummarySegment 
   created_at: Date;
   updated_at: Date;
   total_elevation_gain: number;
-  map: StravaNativePolylineMap;
+  map: StravaNativePolylineMap; // **** no summary polyline
   effort_count: number;
   athlete_count: number;
   hazardous: boolean;
   star_count: number;
+  athlete_segment_stats?: AthleteSegmentStats;
 }
 
 // https://developers.strava.com/docs/reference/#api-models-SummarySegmentEffort
@@ -95,10 +102,10 @@ export interface StravaNativeDetailedSegmentEffort extends StravaNativeSummarySe
   average_heartrate: number;
   max_heartrate: number;
   segment: StravaNativeSummarySegment;
-  kom_rank: any;
-  pr_rank: any;
+  kom_rank?: any;
+  pr_rank: number;
   achievements: StravaNativeAchievement[];
-  hidden: boolean;
+  hidden?: boolean;
 }
 
 export interface StravatronAthlete {
@@ -156,6 +163,7 @@ export interface StravatronSegmentEffort {
   komRank?: number;
 }
 
+// **** these are really StravaNative objects - need to do transformation
 export interface StravatronStream {
   data: any[];
   original_size: number;

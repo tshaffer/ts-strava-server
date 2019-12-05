@@ -134,7 +134,7 @@ export function fetchDetailedActivity(accessToken: string, activityId: string): 
     const path = 'activities/' + activityId;
 
     fetchStravaData(path, accessToken)
-      .then((stravaDetailedActivity: any) => {
+      .then((stravaDetailedActivity: StravaNativeDetailedActivity) => {
         const detailedActivity: StravatronDetailedActivity = transformStravaDetailedActivity(stravaDetailedActivity);
         resolve(detailedActivity);
       });
@@ -262,7 +262,7 @@ export function fetchStream(accessToken: string, activityId: string): Promise<an
 
   return new Promise((resolve) => {
 
-    const path = 'activities/' + activityId + '/streams/time,latlng,distance,altitude,grade_smooth';
+    const path = 'activities/' + activityId + '/streams/time,latlng,distance,altitude,grade_smooth,heartrate,cadence,watts';
 
     fetchStravaData(path, accessToken)
       .then((stravaStreams) => {
@@ -278,7 +278,7 @@ export function fetchAllEfforts(accessToken: string, athleteId: string, segmentI
     const path = 'segments/' + segmentId.toString() + '/all_efforts?athlete_id=' + athleteId.toString();
 
     fetchStravaData(path, accessToken)
-      .then((stravaAllEfforts) => {
+      .then((stravaAllEfforts) => {   // it looks like it si getting StravaNativeDetailedSegmentEffort[] and it needs to transform them
         resolve(stravaAllEfforts);
       });
   });
@@ -292,6 +292,8 @@ export function fetchSegment(accessToken: string, segmentId: number): Promise<St
 
     fetchStravaData(path, accessToken)
       .then((stravaDetailedSegment: StravaNativeDetailedSegment) => {
+        console.log('fetchSegment');
+        console.log(stravaDetailedSegment);
         const stravatronDetailedSegment: StravatronDetailedSegment = transformStravaSegment(stravaDetailedSegment);
         resolve(stravatronDetailedSegment);
       });
