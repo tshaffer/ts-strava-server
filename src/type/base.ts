@@ -62,6 +62,7 @@ export interface StravaNativeSummarySegment {
   athlete_pr_effort?: StravaNativeSummarySegmentEffort;
   resource_state: number;
   starred: boolean;
+  hazardous: boolean;
 }
 
 // https://developers.strava.com/docs/reference/#api-models-DetailedSegment
@@ -72,7 +73,6 @@ export interface StravaNativeDetailedSegment extends StravaNativeSummarySegment 
   map: StravaNativePolylineMap; // **** no summary polyline
   effort_count: number;
   athlete_count: number;
-  hazardous: boolean;
   star_count: number;
   athlete_segment_stats?: AthleteSegmentStats;
 }
@@ -171,7 +171,6 @@ export interface StravatronSegmentEffort {
   komRank?: number;
 }
 
-// **** these are really StravaNative objects - need to do transformation
 export interface StravatronStream {
   data: any[];
   originalSize: number;

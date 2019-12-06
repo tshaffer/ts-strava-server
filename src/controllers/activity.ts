@@ -124,7 +124,7 @@ export function getDetailedActivity(request: Request, response: Response) {
             retSegmentsEfforts = segmentEfforts;
 
             // retrieve all efforts for each of the segments in this activity
-            const fetchAllEffortsPromises: Array<Promise<any>> = [];
+            const fetchAllEffortsPromises: Array<Promise<StravatronSegmentEffort[]>> = [];
             const athleteId = '2843574';            // pa
             // const athleteId = '7085811';         // ma
             segmentIds.forEach((segmentId) => {
@@ -142,20 +142,20 @@ export function getDetailedActivity(request: Request, response: Response) {
                     // get information about segment as appropriate, presumably from first 'effort for segment'
 
                     // convert to stravatron segmentEfforts
-                    allEffortsForSegment.forEach((stravaSegmentEffort: StravaNativeDetailedSegmentEffort) => {
+                    allEffortsForSegment.forEach((stravaSegmentEffort: StravatronSegmentEffort) => {
 
                       const stravatronSummarySegment: StravatronSummarySegment = {
                         id: stravaSegmentEffort.segment.id,
                         name: stravaSegmentEffort.segment.name,
                         distance: stravaSegmentEffort.segment.distance,
-                        averageGrade: stravaSegmentEffort.segment.average_grade,
-                        maximumGrade: stravaSegmentEffort.segment.maximum_grade,
-                        elevationHigh: stravaSegmentEffort.segment.elevation_high,
-                        elevationLow: stravaSegmentEffort.segment.elevation_low,
-                        activityType: stravaSegmentEffort.segment.activity_type,
-                        climbCategory: stravaSegmentEffort.segment.climb_category,
-                        startLatlng: stravaSegmentEffort.segment.start_latlng,
-                        endLatlng: stravaSegmentEffort.segment.end_latlng,
+                        averageGrade: stravaSegmentEffort.segment.averageGrade,
+                        maximumGrade: stravaSegmentEffort.segment.maximumGrade,
+                        elevationHigh: stravaSegmentEffort.segment.elevationHigh,
+                        elevationLow: stravaSegmentEffort.segment.elevationLow,
+                        activityType: stravaSegmentEffort.segment.activityType,
+                        climbCategory: stravaSegmentEffort.segment.climbCategory,
+                        startLatlng: stravaSegmentEffort.segment.startLatlng,
+                        endLatlng: stravaSegmentEffort.segment.endLatlng,
                       };
 
                       const achievements: any[] = [];
@@ -163,27 +163,27 @@ export function getDetailedActivity(request: Request, response: Response) {
                         achievements.push({
                           rank: achievement.rank,
                           type: achievement.type,
-                          typeId: achievement.type_id,
+                          typeId: achievement.typeId,
                         });
                       }
 
                       const stravatronSegmentEffort: StravatronSegmentEffort = {
                         id: stravaSegmentEffort.id,
                         name: stravaSegmentEffort.name,
-                        activityId: stravaSegmentEffort.activity.id,
-                        elapsedTime: stravaSegmentEffort.elapsed_time,
-                        movingTime: stravaSegmentEffort.moving_time,
-                        startDateLocal: stravaSegmentEffort.start_date_local,
+                        activityId: stravaSegmentEffort.activityId,
+                        elapsedTime: stravaSegmentEffort.elapsedTime,
+                        movingTime: stravaSegmentEffort.movingTime,
+                        startDateLocal: stravaSegmentEffort.startDateLocal,
                         distance: stravaSegmentEffort.distance,
-                        averageWatts: stravaSegmentEffort.average_watts,
+                        averageWatts: stravaSegmentEffort.averageWatts,
                         segment: stravatronSummarySegment,
-                        prRank: stravaSegmentEffort.pr_rank,
+                        prRank: stravaSegmentEffort.prRank,
                         achievements,
-                        averageCadence: stravaSegmentEffort.average_cadence,
-                        averageHeartrate: stravaSegmentEffort.average_heartrate,
-                        deviceWatts: stravaSegmentEffort.device_watts,
-                        maxHeartrate: stravaSegmentEffort.max_heartrate,
-                        startDate: stravaSegmentEffort.start_date,
+                        averageCadence: stravaSegmentEffort.averageCadence,
+                        averageHeartrate: stravaSegmentEffort.averageHeartrate,
+                        deviceWatts: stravaSegmentEffort.deviceWatts,
+                        maxHeartrate: stravaSegmentEffort.maxHeartrate,
+                        startDate: stravaSegmentEffort.startDate,
                       };
 
                       segmentEffortsInActivity.push(stravatronSegmentEffort);
@@ -195,9 +195,6 @@ export function getDetailedActivity(request: Request, response: Response) {
                       //   // console.log("segmentEffort addition failed:", segmentEffort.activityId);
                       // });
                     });
-
-                    // add all individual segment efforts to store
-                    // dispatch(addSegmentEfforts(segmentEfforts));
                   }
                 });
               }

@@ -90,7 +90,7 @@ export interface StravatronSummaryActivity {
   averageSpeed: number;
   averageTemp?: number;
   averageWatts: number;
-  deviceWatts: boolean;
+  deviceWatts?: boolean;
   distance: number;
   elapsedTime: number;
   elevHigh?: number;
