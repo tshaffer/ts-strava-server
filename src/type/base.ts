@@ -151,6 +151,8 @@ export interface StravatronAchievement {
   typeId: number;
 }
 
+export type StravatronSegmentEffortsForSegment = StravatronSegmentEffort[];
+
 export interface StravatronSegmentEffort {
   id: number;
   name: string;
