@@ -1,4 +1,4 @@
-import { StravaNativeSummarySegmentEffort, StravaNativeSummaryAthlete, StravaNativeLatLng, StravaNativePolylineMap, StravaNativeDetailedSegmentEffort, StravaNativeMetaAthlete, StravatronSegmentEffort } from "./base";
+import { StravaNativeSummarySegmentEffort, StravaNativeSummaryAthlete, StravaNativeLatLng, StravaNativePolylineMap, StravaNativeDetailedSegmentEffort, StravaNativeMetaAthlete, StravatronSegmentEffort, StravatronSummarySegment, StravatronDetailedSegment } from "./base";
 
 export interface StravaNativeMetaActivity {
   id: number;
@@ -140,4 +140,13 @@ export interface StravatronDetailedActivityAttributes {
   segmentEfforts: StravatronSegmentEffort[];
   map: StravaNativePolylineMap;
   streams: any[];
+}
+
+export interface StravatronDetailedActivityData {
+  detailedActivityAttributes: StravatronDetailedActivityAttributes;
+  locationData: any[];
+  segments: StravatronSummarySegment[];
+  detailedSegments: StravatronDetailedSegment[];
+  segmentEfforts: StravatronSegmentEffort[];
+  segmentEffortsInActivity: StravatronSegmentEffort[];
 }

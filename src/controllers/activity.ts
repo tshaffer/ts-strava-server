@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 import { fetchSummaryActivities, retrieveAccessToken, fetchDetailedActivity } from '../controllers';
-import { StravaNativeDetailedSegment, StravatronDetailedActivity, StravatronSegmentEffort, StravatronDetailedActivityAttributes, StravatronStreamData, StravatronStream, StravatronSummarySegment, StravaNativeDetailedSegmentEffort, StravatronDetailedSegment, StravatronSegmentEffortsForSegment } from '../type';
+import { StravaNativeDetailedSegment, StravatronDetailedActivity, StravatronSegmentEffort, StravatronDetailedActivityAttributes, StravatronStreamData, StravatronStream, StravatronSummarySegment, StravaNativeDetailedSegmentEffort, StravatronDetailedSegment, StravatronSegmentEffortsForSegment, StravatronSummaryActivity, StravatronDetailedActivityData } from '../type';
 import { fetchStreams, fetchSegment, fetchAllEfforts } from './strava';
 
 function getSecondsSinceLastFetch(): number {
@@ -35,7 +35,7 @@ export function getActivities(request: Request, response: Response) {
 
       const secondsSinceLastFetch = getSecondsSinceLastFetch();
       fetchSummaryActivities(accessToken, secondsSinceLastFetch)
-        .then((summaryActivities: any[]) => {
+        .then((summaryActivities: StravatronSummaryActivity[]) => {
           response.json(summaryActivities);
         });
     })
@@ -202,7 +202,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
           streams,
         };
 
-      const retData: any = {
+      const retData: StravatronDetailedActivityData = {
         detailedActivityAttributes,
         locationData: stravatronStreamData.locationData,
         segments,
