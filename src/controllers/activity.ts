@@ -56,7 +56,7 @@ function getAllEffortsForAllSegments(accessToken: any, athleteId: string, segmen
 
     const segmentId = segmentIds[index];
 
-    fetchAllEfforts(accessToken, athleteId, segmentId)
+    return fetchAllEfforts(accessToken, athleteId, segmentId)
       .then((segmentEffortsForSegment: StravatronSegmentEffortsForSegment) => {
         allEffortsForSegmentsInCurrentActivity.push(segmentEffortsForSegment);
         return getNextEffortsForSegment(index + 1);
@@ -78,7 +78,7 @@ function getSegments(accessToken: any, segmentIds: number[]): Promise<Stravatron
 
     const segmentId = segmentIds[index];
 
-    fetchSegment(accessToken, segmentId)
+    return fetchSegment(accessToken, segmentId)
       .then((detailedSegment: StravatronDetailedSegment) => {
         detailedSegments.push(detailedSegment);
         return getNextSegment(index + 1);
