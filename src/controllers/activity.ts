@@ -89,7 +89,7 @@ function getSegments(accessToken: any, segmentIds: number[]): Promise<Stravatron
 }
 
 function getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity: StravatronSegmentEffortsForSegment[]): StravatronSegmentEffort[] {
-  
+
   const segmentEffortsInActivity: StravatronSegmentEffort[] = [];
 
   for (const allEffortsForSegment of allEffortsForSegmentsInCurrentActivity) {
@@ -145,63 +145,75 @@ function getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity: Str
 
 export function getDetailedActivity(request: Request, response: Response): Promise<any> {
 
+  const activityId: string = request.query.activityId;
+
+  let accessToken: any;
+  let detailedActivity: StravatronDetailedActivity;
   let detailedActivityAttributes: StravatronDetailedActivityAttributes;
+  const segments: StravatronSummarySegment[] = [];
+  const segmentIds: number[] = [];
+  let detailedSegments: StravatronDetailedSegment[];
+  let segmentEffortsInActivity: StravatronSegmentEffort[];
+  const segmentEfforts: StravatronSegmentEffort[] = [];
 
   return retrieveAccessToken()
-    .then((accessToken: any) => {
 
-      const activityId: string = request.query.activityId;
+    .then((accessTokenRet: any) => {
 
-      // const fetchStreamsPromise = fetchStreams(accessToken, activityId);
+      accessToken = accessTokenRet;
+      return fetchDetailedActivity(accessToken, activityId);
 
-      fetchDetailedActivity(accessToken, activityId)
-        .then((detailedActivity: StravatronDetailedActivity) => {
+    }).then((detailedActivityRet: StravatronDetailedActivity) => {
 
-          const segments: StravatronSummarySegment[] = [];
-          const segmentIds: number[] = [];
-          const segmentEfforts: StravatronSegmentEffort[] = [];
+      detailedActivity = detailedActivityRet;
 
-          // retrieve all segmentEfforts and segments from the detailed activity
-          for (const stravaSegmentEffort of detailedActivity.segmentEfforts) {
-            const segment: StravatronSummarySegment = stravaSegmentEffort.segment;
-            segments.push(segment);
-            segmentIds.push(segment.id);
-            segmentEfforts.push(stravaSegmentEffort);
-          }
 
-          getSegments(accessToken, segmentIds)
-            .then((detailedSegments: StravatronDetailedSegment[]) => {
+      // retrieve all segmentEfforts and segments from the detailed activity
+      for (const stravaSegmentEffort of detailedActivity.segmentEfforts) {
+        const segment: StravatronSummarySegment = stravaSegmentEffort.segment;
+        segments.push(segment);
+        segmentIds.push(segment.id);
+        segmentEfforts.push(stravaSegmentEffort);
+      }
 
-              const athleteId = '2843574';            // pa
-              // const athleteId = '7085811';         // ma
+      return getSegments(accessToken, segmentIds);
 
-              return getAllEffortsForAllSegments(accessToken, athleteId, segmentIds);
-            }).then((allEffortsForSegmentsInCurrentActivity) => {
-              const segmentEffortsInActivity: StravatronSegmentEffort[] = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
-            });
-        });
+    }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
 
-      // detailedActivityAttributes = 
-      // {
-      //   calories: detailedActivity.calories,
-      //   segmentEfforts: detailedActivity.segmentEfforts,
-      //   map: detailedActivity.map,
-      //   streams: null;
-      // };
+      detailedSegments = detailedSegmentsRet;
 
-      /*
-              const retData: any = {
-                detailedActivityAttributes: retDetailedActivityAttributes,
-                locationData: retLocationData,
-                segments: retSegments,
-                detailedSegments,
-                segmentEfforts: retSegmentsEfforts,
-                segmentEffortsInActivity,
-              };
-              response.json(retData);
-      */
+      const athleteId = '2843574';            // pa
+      // const athleteId = '7085811';         // ma
+
+      return getAllEffortsForAllSegments(accessToken, athleteId, segmentIds);
+
+    }).then((allEffortsForSegmentsInCurrentActivity) => {
+      segmentEffortsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
+      return fetchStreams(accessToken, activityId);
+    }).then((streams: StravatronStream[]) => {
+
+      const stravatronStreamData: StravatronStreamData = getStreamData(streams);
+
+      detailedActivityAttributes =
+        {
+          calories: detailedActivity.calories,
+          segmentEfforts: detailedActivity.segmentEfforts,
+          map: detailedActivity.map,
+          streams,
+        };
+
+      const retData: any = {
+        detailedActivityAttributes,
+        locationData: stravatronStreamData.locationData,
+        segments,
+        detailedSegments,
+        segmentEfforts,
+        segmentEffortsInActivity,
+      };
+      response.json(retData);
     });
 }
+
 export function oldgetDetailedActivity(request: Request, response: Response) {
 
   const activityId: string = request.query.activityId;
