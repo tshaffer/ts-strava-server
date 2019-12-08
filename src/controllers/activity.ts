@@ -177,6 +177,13 @@ export function getDetailedActivity(request: Request, response: Response): Promi
 
       detailedActivityAttributes =
         {
+          name: detailedActivity.name,
+          distance: detailedActivity.distance,
+          movingTime: detailedActivity.movingTime,
+          averageSpeed: detailedActivity.averageSpeed,
+          kilojoules: detailedActivity.kilojoules,
+          totalElevationGain: detailedActivity.totalElevationGain,
+          startDateLocal: detailedActivity.startDateLocal,
           calories: detailedActivity.calories,
           map: detailedActivity.map,
         };

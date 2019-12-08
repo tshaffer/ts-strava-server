@@ -13,7 +13,14 @@ export interface StravatronDetailedActivityData {
 }
 
 export interface StravatronDetailedActivityAttributes {
+  name: string;
+  distance: number;
+  movingTime: number;
+  averageSpeed: number;
   calories: number;
+  kilojoules: number;
+  totalElevationGain: number;
+  startDateLocal: Date;
   map: StravaNativePolylineMap;
 }
 
@@ -137,5 +144,3 @@ export interface StravatronDetailedActivity extends StravatronSummaryActivity {
 
   bestEfforts?: any; // DetailedSegmentEffort or DetailedSegmentEffort[] ??
 }
-
-// ????
