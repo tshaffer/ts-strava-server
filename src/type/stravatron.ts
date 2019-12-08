@@ -1,9 +1,27 @@
 import { 
   StravaNativeLatLng, 
-  StravaNativePolylineMap, 
+  StravaNativePolylineMap,
 } from './strava';
 
 export type StravatronSegmentEffortsForSegment = StravatronSegmentEffort[];
+
+export interface StravatronDetailedActivityData {
+  detailedActivityAttributes: StravatronDetailedActivityAttributes;
+  segmentEfforts: StravatronSegmentEffort[];
+  allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
+  // TEDTODO
+  locationData: any[];
+  segments: StravatronSummarySegment[];
+  detailedSegments: StravatronDetailedSegment[];
+}
+
+export interface StravatronDetailedActivityAttributes {
+  calories: number;
+  segmentEfforts: StravatronSegmentEffort[];
+  map: StravaNativePolylineMap;
+  streams: any[];
+}
+
 
 export interface StravatronAthlete {
   id: string;
@@ -130,18 +148,3 @@ export interface StravatronDetailedActivity extends StravatronSummaryActivity {
 }
 
 // ????
-export interface StravatronDetailedActivityAttributes {
-  calories: number;
-  segmentEfforts: StravatronSegmentEffort[];
-  map: StravaNativePolylineMap;
-  streams: any[];
-}
-
-export interface StravatronDetailedActivityData {
-  detailedActivityAttributes: StravatronDetailedActivityAttributes;
-  locationData: any[];
-  segments: StravatronSummarySegment[];
-  detailedSegments: StravatronDetailedSegment[];
-  segmentEfforts: StravatronSegmentEffort[];
-  segmentEffortsInActivity: StravatronSegmentEffort[];
-}

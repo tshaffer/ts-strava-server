@@ -153,7 +153,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
   const segments: StravatronSummarySegment[] = [];
   const segmentIds: number[] = [];
   let detailedSegments: StravatronDetailedSegment[];
-  let segmentEffortsInActivity: StravatronSegmentEffort[];
+  let allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
   const segmentEfforts: StravatronSegmentEffort[] = [];
 
   return retrieveAccessToken()
@@ -188,7 +188,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
       return getAllEffortsForAllSegments(accessToken, athleteId, segmentIds);
 
     }).then((allEffortsForSegmentsInCurrentActivity) => {
-      segmentEffortsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
+      allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
       return fetchStreams(accessToken, activityId);
     }).then((streams: StravatronStream[]) => {
 
@@ -202,188 +202,16 @@ export function getDetailedActivity(request: Request, response: Response): Promi
           streams,
         };
 
-      const retData: StravatronDetailedActivityData = {
+      const detailedActivityData: StravatronDetailedActivityData = {
         detailedActivityAttributes,
         locationData: stravatronStreamData.locationData,
         segments,
         detailedSegments,
         segmentEfforts,
-        segmentEffortsInActivity,
+        allSegmentEffortsForSegmentsInActivity,
       };
-      response.json(retData);
+      response.json(detailedActivityData);
     });
-}
-
-export function oldgetDetailedActivity(request: Request, response: Response) {
-
-  const activityId: string = request.query.activityId;
-
-  let stravaDetailedActivity: StravatronDetailedActivity;
-  let retDetailedActivityAttributes: StravatronDetailedActivityAttributes;
-  let retLocationData: any[] = [];
-  let retSegments: StravatronSummarySegment[] = [];
-  let retSegmentsEfforts: StravatronSegmentEffort[] = [];
-
-  return retrieveAccessToken()
-    .then((accessToken: any) => {
-      fetchDetailedActivity(accessToken, activityId)
-        .then((detailedActivity: StravatronDetailedActivity) => {
-          stravaDetailedActivity = detailedActivity;
-          return fetchStreams(accessToken, activityId);
-        }).then((stravaStreams: StravatronStream[]) => {
-
-          retDetailedActivityAttributes =
-            {
-              calories: stravaDetailedActivity.calories,
-              segmentEfforts: stravaDetailedActivity.segmentEfforts,
-              map: stravaDetailedActivity.map,
-              streams: stravaStreams,
-            };
-
-          // add streams to the db
-          const stravatronStreamData: StravatronStreamData = getStreamData(stravaStreams);
-          retLocationData = stravatronStreamData.locationData;
-
-          // dispatch(setActivityLocations(locationData));
-
-          // TEDTODO - the following could be done independent from fetchStream
-
-          const segments: StravatronSummarySegment[] = [];
-          const segmentIds: number[] = [];
-          const segmentEfforts: StravatronSegmentEffort[] = [];
-
-          // segment efforts for each segment in this activity
-
-          for (const stravaSegmentEffort of stravaDetailedActivity.segmentEfforts) {
-
-            const segment: StravatronSummarySegment = stravaSegmentEffort.segment;
-            segments.push(segment);
-
-            segmentIds.push(segment.id);
-            segmentEfforts.push(stravaSegmentEffort);
-
-            //   // add segment, segmentEffort to db
-            //   const addSegmentPromise = dbServices.addSegment(segment);
-            //   addSegmentPromise.then( () => {
-            //   }, (_) => {
-            //     // console.log('segment addition failed:', activityId);
-            //   });
-
-            //   const addSegmentEffortPromise = dbServices.addSegmentEffort(segmentEffort);
-            //   addSegmentEffortPromise.then( () => {
-            //   }, (_) => {
-            //     // console.log('segmentEffort addition failed:', segmentEffort.activityId);
-            //   });
-            // });
-          }
-
-          // get segments
-          const fetchSegmentPromises: Array<Promise<any>> = [];
-          for (const segmentId of segmentIds) {
-            fetchSegmentPromises.push(fetchSegment(accessToken, segmentId));
-          }
-
-          Promise.all(fetchSegmentPromises).then((detailedSegments: StravaNativeDetailedSegment[]) => {
-
-            retSegments = segments;
-            retSegmentsEfforts = segmentEfforts;
-
-            // retrieve all efforts for each of the segments in this activity
-            const fetchAllEffortsPromises: Array<Promise<StravatronSegmentEffort[]>> = [];
-            const athleteId = '2843574';            // pa
-            // const athleteId = '7085811';         // ma
-            segmentIds.forEach((segmentId) => {
-              fetchAllEffortsPromises.push(fetchAllEfforts(accessToken, athleteId, segmentId));
-            });
-
-            Promise.all(fetchAllEffortsPromises).then((allEffortsForSegmentsInCurrentActivity) => {
-
-              const segmentEffortsInActivity: StravatronSegmentEffort[] = [];
-
-              if (allEffortsForSegmentsInCurrentActivity instanceof Array) {
-                allEffortsForSegmentsInCurrentActivity.forEach((allEffortsForSegment) => {
-                  if (allEffortsForSegment instanceof Array) {
-
-                    // get information about segment as appropriate, presumably from first 'effort for segment'
-
-                    // convert to stravatron segmentEfforts
-                    allEffortsForSegment.forEach((stravaSegmentEffort: StravatronSegmentEffort) => {
-
-                      const stravatronSummarySegment: StravatronSummarySegment = {
-                        id: stravaSegmentEffort.segment.id,
-                        name: stravaSegmentEffort.segment.name,
-                        distance: stravaSegmentEffort.segment.distance,
-                        averageGrade: stravaSegmentEffort.segment.averageGrade,
-                        maximumGrade: stravaSegmentEffort.segment.maximumGrade,
-                        elevationHigh: stravaSegmentEffort.segment.elevationHigh,
-                        elevationLow: stravaSegmentEffort.segment.elevationLow,
-                        activityType: stravaSegmentEffort.segment.activityType,
-                        climbCategory: stravaSegmentEffort.segment.climbCategory,
-                        startLatlng: stravaSegmentEffort.segment.startLatlng,
-                        endLatlng: stravaSegmentEffort.segment.endLatlng,
-                      };
-
-                      const achievements: any[] = [];
-                      for (const achievement of stravaSegmentEffort.achievements) {
-                        achievements.push({
-                          rank: achievement.rank,
-                          type: achievement.type,
-                          typeId: achievement.typeId,
-                        });
-                      }
-
-                      const stravatronSegmentEffort: StravatronSegmentEffort = {
-                        id: stravaSegmentEffort.id,
-                        name: stravaSegmentEffort.name,
-                        activityId: stravaSegmentEffort.activityId,
-                        elapsedTime: stravaSegmentEffort.elapsedTime,
-                        movingTime: stravaSegmentEffort.movingTime,
-                        startDateLocal: stravaSegmentEffort.startDateLocal,
-                        distance: stravaSegmentEffort.distance,
-                        averageWatts: stravaSegmentEffort.averageWatts,
-                        segment: stravatronSummarySegment,
-                        prRank: stravaSegmentEffort.prRank,
-                        achievements,
-                        averageCadence: stravaSegmentEffort.averageCadence,
-                        averageHeartrate: stravaSegmentEffort.averageHeartrate,
-                        deviceWatts: stravaSegmentEffort.deviceWatts,
-                        maxHeartrate: stravaSegmentEffort.maxHeartrate,
-                        startDate: stravaSegmentEffort.startDate,
-                      };
-
-                      segmentEffortsInActivity.push(stravatronSegmentEffort);
-
-                      // // add segment effort to the db
-                      // const addSegmentEffortPromise = dbServices.addSegmentEffort(segmentEffort);
-                      // addSegmentEffortPromise.then( () => {
-                      // }, (_) => {
-                      //   // console.log("segmentEffort addition failed:", segmentEffort.activityId);
-                      // });
-                    });
-                  }
-                });
-              }
-
-              const retData: any = {
-                detailedActivityAttributes: retDetailedActivityAttributes,
-                locationData: retLocationData,
-                segments: retSegments,
-                detailedSegments,
-                segmentEfforts: retSegmentsEfforts,
-                segmentEffortsInActivity,
-              };
-              response.json(retData);
-            });
-
-          });
-
-        });
-    })
-    .catch((err: Error) => {
-      console.log('error: ', err);
-    });
-
-
 }
 
 function getStreamData(stravaStreams: StravatronStream[]): StravatronStreamData {
