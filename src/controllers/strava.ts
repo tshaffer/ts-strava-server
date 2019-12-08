@@ -2,7 +2,7 @@ import https from 'https';
 import axios from 'axios';
 import { isNil } from 'lodash';
 
-import { StravatronSummaryActivity, StravaNativeSummaryActivity, StravatronDetailedActivity, StravaNativeDetailedActivity } from '../type/activity';
+import { StravatronSummaryActivity, StravaNativeSummaryActivity, StravatronDetailedActivity, StravaNativeDetailedActivity } from '../type';
 import { StravatronSegmentEffort, StravatronSummarySegment, StravatronAchievement, StravaNativeDetailedSegment, StravaNativeSummarySegment, StravatronDetailedSegment, StravaNativeStream, StravatronStream, StravatronStreamData, StravaNativeDetailedSegmentEffort } from '../type';
 
 export function retrieveAccessToken() {

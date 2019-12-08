@@ -1,2 +1,2 @@
-export * from './base';
-export * from './activity';
+export * from './strava';
+export * from './stravatron';
