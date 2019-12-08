@@ -8,15 +8,13 @@ export type StravatronSegmentEffortsForSegment = StravatronSegmentEffort[];
 export interface StravatronDetailedActivityData {
   detailedActivityAttributes: StravatronDetailedActivityAttributes;
   allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
-  // TEDTODO
-  locationData: any[];
+  streams: StravatronStreams;
   segments: StravatronDetailedSegment[];
 }
 
 export interface StravatronDetailedActivityAttributes {
   calories: number;
   map: StravaNativePolylineMap;
-  streams: any[];
 }
 
 export interface StravatronAthlete {
@@ -79,15 +77,15 @@ export interface StravatronStream {
   type: string;
 }
 
-export interface StravatronStreamData {
-  timeData: any[];
-  locationData: any[];
-  elevationData: any[];
-  distanceData: any[];
-  gradientData: any[];
-  cadenceData: any[];
-  heartrateData: any[];
-  wattsData: any[];
+export interface StravatronStreams {
+  time: any[];
+  location: any[];
+  elevation: any[];
+  distance: any[];
+  gradient: any[];
+  cadence: any[];
+  heartrate: any[];
+  watts: any[];
 }
 
 export interface StravatronSummaryActivity {

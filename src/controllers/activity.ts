@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 
 import { fetchSummaryActivities, retrieveAccessToken, fetchDetailedActivity } from '../controllers';
-import { StravaNativeDetailedSegment, StravatronDetailedActivity, StravatronSegmentEffort, StravatronDetailedActivityAttributes, StravatronStreamData, StravatronStream, StravatronDetailedSegment, StravatronSegmentEffortsForSegment, StravatronSummaryActivity, StravatronDetailedActivityData, StravaNativeDetailedActivity } from '../type';
+import { StravaNativeDetailedSegment, StravatronDetailedActivity, StravatronSegmentEffort, StravatronDetailedActivityAttributes, StravatronStreams, StravatronStream, StravatronDetailedSegment, StravatronSegmentEffortsForSegment, StravatronSummaryActivity, StravatronDetailedActivityData, StravaNativeDetailedActivity } from '../type';
 import { fetchStreams, fetchSegment, fetchAllEfforts, transformStravaDetailedActivity } from './strava';
 
 function getSecondsSinceLastFetch(): number {
@@ -173,18 +173,17 @@ export function getDetailedActivity(request: Request, response: Response): Promi
       return fetchStreams(accessToken, activityId);
     }).then((streams: StravatronStream[]) => {
 
-      const stravatronStreamData: StravatronStreamData = getStreamData(streams);
+      const stravatronStreamData: StravatronStreams = getStreamData(streams);
 
       detailedActivityAttributes =
         {
           calories: detailedActivity.calories,
           map: detailedActivity.map,
-          streams,
         };
 
       const detailedActivityData: StravatronDetailedActivityData = {
         detailedActivityAttributes,
-        locationData: stravatronStreamData.locationData,
+        streams: stravatronStreamData,
         segments,
         allSegmentEffortsForSegmentsInActivity,
       };
@@ -192,7 +191,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
     });
 }
 
-function getStreamData(stravaStreams: StravatronStream[]): StravatronStreamData {
+function getStreamData(stravaStreams: StravatronStream[]): StravatronStreams {
 
   let timeData: any[];
   let locationData: any[];
@@ -233,16 +232,16 @@ function getStreamData(stravaStreams: StravatronStream[]): StravatronStreamData 
     }
   }
 
-  const streamData: StravatronStreamData =
+  const streamData: StravatronStreams =
   {
-    timeData,
-    locationData,
-    elevationData,
-    distanceData,
-    gradientData,
-    cadenceData,
-    heartrateData,
-    wattsData,
+    time: timeData,
+    location: locationData,
+    elevation: elevationData,
+    distance: distanceData,
+    gradient: gradientData,
+    cadence: cadenceData,
+    heartrate: heartrateData,
+    watts: wattsData,
   };
 
   return streamData;
