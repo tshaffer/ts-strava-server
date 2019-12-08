@@ -1,5 +1,5 @@
-import { 
-  StravaNativeLatLng, 
+import {
+  StravaNativeLatLng,
   StravaNativePolylineMap,
 } from './strava';
 
@@ -7,21 +7,17 @@ export type StravatronSegmentEffortsForSegment = StravatronSegmentEffort[];
 
 export interface StravatronDetailedActivityData {
   detailedActivityAttributes: StravatronDetailedActivityAttributes;
-  segmentEfforts: StravatronSegmentEffort[];
   allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
   // TEDTODO
   locationData: any[];
-  segments: StravatronSummarySegment[];
-  detailedSegments: StravatronDetailedSegment[];
+  segments: StravatronDetailedSegment[];
 }
 
 export interface StravatronDetailedActivityAttributes {
   calories: number;
-  segmentEfforts: StravatronSegmentEffort[];
   map: StravaNativePolylineMap;
   streams: any[];
 }
-
 
 export interface StravatronAthlete {
   id: string;
@@ -31,7 +27,7 @@ export interface StravatronAthlete {
   email: string;
 }
 
-export interface StravatronSummarySegment {
+export interface StravatronDetailedSegment {
   id: number;
   name: string;
   distance: number;
@@ -44,9 +40,6 @@ export interface StravatronSummarySegment {
   startLatlng: StravaNativeLatLng;
   endLatlng: StravaNativeLatLng;
   athletePrEffort?: any; // ****
-}
-
-export interface StravatronDetailedSegment extends StravatronSummarySegment {
   totalElevationGain: number;
   map: StravaNativePolylineMap;
   effortCount: number;
@@ -60,6 +53,7 @@ export interface StravatronAchievement {
 
 export interface StravatronSegmentEffort {
   id: number;
+  segmentId: number;
   name: string;
   activityId: number;
   elapsedTime: number;
@@ -67,7 +61,6 @@ export interface StravatronSegmentEffort {
   startDateLocal: Date;
   distance: number;
   averageWatts: number;
-  segment: StravatronSummarySegment;
   prRank: number;
   achievements: StravatronAchievement[];
   averageCadence: number;

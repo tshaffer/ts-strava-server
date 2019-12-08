@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 
 import { fetchSummaryActivities, retrieveAccessToken, fetchDetailedActivity } from '../controllers';
-import { StravaNativeDetailedSegment, StravatronDetailedActivity, StravatronSegmentEffort, StravatronDetailedActivityAttributes, StravatronStreamData, StravatronStream, StravatronSummarySegment, StravaNativeDetailedSegmentEffort, StravatronDetailedSegment, StravatronSegmentEffortsForSegment, StravatronSummaryActivity, StravatronDetailedActivityData } from '../type';
-import { fetchStreams, fetchSegment, fetchAllEfforts } from './strava';
+import { StravaNativeDetailedSegment, StravatronDetailedActivity, StravatronSegmentEffort, StravatronDetailedActivityAttributes, StravatronStreamData, StravatronStream, StravatronDetailedSegment, StravatronSegmentEffortsForSegment, StravatronSummaryActivity, StravatronDetailedActivityData, StravaNativeDetailedActivity } from '../type';
+import { fetchStreams, fetchSegment, fetchAllEfforts, transformStravaDetailedActivity } from './strava';
 
 function getSecondsSinceLastFetch(): number {
 
@@ -95,19 +95,6 @@ function getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity: Str
   for (const allEffortsForSegment of allEffortsForSegmentsInCurrentActivity) {
     // convert to stravatron segmentEfforts
     for (const effortForSegment of allEffortsForSegment) {
-      const stravatronSummarySegment: StravatronSummarySegment = {
-        id: effortForSegment.segment.id,
-        name: effortForSegment.segment.name,
-        distance: effortForSegment.segment.distance,
-        averageGrade: effortForSegment.segment.averageGrade,
-        maximumGrade: effortForSegment.segment.maximumGrade,
-        elevationHigh: effortForSegment.segment.elevationHigh,
-        elevationLow: effortForSegment.segment.elevationLow,
-        activityType: effortForSegment.segment.activityType,
-        climbCategory: effortForSegment.segment.climbCategory,
-        startLatlng: effortForSegment.segment.startLatlng,
-        endLatlng: effortForSegment.segment.endLatlng,
-      };
 
       const achievements: any[] = [];
       for (const achievement of effortForSegment.achievements) {
@@ -120,6 +107,7 @@ function getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity: Str
 
       const stravatronSegmentEffort: StravatronSegmentEffort = {
         id: effortForSegment.id,
+        segmentId: effortForSegment.segmentId,
         name: effortForSegment.name,
         activityId: effortForSegment.activityId,
         elapsedTime: effortForSegment.elapsedTime,
@@ -127,7 +115,6 @@ function getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity: Str
         startDateLocal: effortForSegment.startDateLocal,
         distance: effortForSegment.distance,
         averageWatts: effortForSegment.averageWatts,
-        segment: stravatronSummarySegment,
         prRank: effortForSegment.prRank,
         achievements,
         averageCadence: effortForSegment.averageCadence,
@@ -150,11 +137,9 @@ export function getDetailedActivity(request: Request, response: Response): Promi
   let accessToken: any;
   let detailedActivity: StravatronDetailedActivity;
   let detailedActivityAttributes: StravatronDetailedActivityAttributes;
-  const segments: StravatronSummarySegment[] = [];
   const segmentIds: number[] = [];
-  let detailedSegments: StravatronDetailedSegment[];
+  let segments: StravatronDetailedSegment[];
   let allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
-  const segmentEfforts: StravatronSegmentEffort[] = [];
 
   return retrieveAccessToken()
 
@@ -163,24 +148,20 @@ export function getDetailedActivity(request: Request, response: Response): Promi
       accessToken = accessTokenRet;
       return fetchDetailedActivity(accessToken, activityId);
 
-    }).then((detailedActivityRet: StravatronDetailedActivity) => {
+    }).then((nativeDetailedActivity: StravaNativeDetailedActivity) => {
 
-      detailedActivity = detailedActivityRet;
-
+      detailedActivity = transformStravaDetailedActivity(nativeDetailedActivity);
 
       // retrieve all segmentEfforts and segments from the detailed activity
-      for (const stravaSegmentEffort of detailedActivity.segmentEfforts) {
-        const segment: StravatronSummarySegment = stravaSegmentEffort.segment;
-        segments.push(segment);
-        segmentIds.push(segment.id);
-        segmentEfforts.push(stravaSegmentEffort);
+      for (const stravaSegmentEffort of nativeDetailedActivity.segment_efforts) {
+        segmentIds.push(stravaSegmentEffort.segment.id);
       }
 
       return getSegments(accessToken, segmentIds);
 
     }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
 
-      detailedSegments = detailedSegmentsRet;
+      segments = detailedSegmentsRet;
 
       const athleteId = '2843574';            // pa
       // const athleteId = '7085811';         // ma
@@ -197,7 +178,6 @@ export function getDetailedActivity(request: Request, response: Response): Promi
       detailedActivityAttributes =
         {
           calories: detailedActivity.calories,
-          segmentEfforts: detailedActivity.segmentEfforts,
           map: detailedActivity.map,
           streams,
         };
@@ -206,8 +186,6 @@ export function getDetailedActivity(request: Request, response: Response): Promi
         detailedActivityAttributes,
         locationData: stravatronStreamData.locationData,
         segments,
-        detailedSegments,
-        segmentEfforts,
         allSegmentEffortsForSegmentsInActivity,
       };
       response.json(detailedActivityData);
