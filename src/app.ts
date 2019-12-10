@@ -6,6 +6,7 @@ import * as path from 'path';
 
 
 import { Routes } from './routes/routes';
+import { ActivitiesRoutes } from './routes/activities';
 
 const mongoDB = 'mongodb://ted:stravaTed-0524@ds063449.mlab.com:63449/stravatron';
 // const mongoDB = process.env.MONGOLAB_URI; 
@@ -14,6 +15,7 @@ class App {
 
   public app: express.Application;
   public route: Routes = new Routes();
+  public activitiesRoutes: ActivitiesRoutes = new ActivitiesRoutes();
 
   constructor() {
 
@@ -23,6 +25,7 @@ class App {
     this.app = express();
     this.config();
     this.route.routes(this.app);
+    this.activitiesRoutes.routes(this.app);
 
     // Workaround to allow empty strings
     // https://github.com/Automattic/mongoose/issues/7150
