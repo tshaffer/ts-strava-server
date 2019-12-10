@@ -9,9 +9,9 @@ import {
 export class ActivitiesRoutes {
 
   public routes(app: express.Application): void {
-    router.get('/app/v1/activities', getActivities);
-    router.get('/app/v1/activity/:id', getDetailedActivity);
-    app.use('/', router);
+    router.get('/activities', getActivities);
+    router.get('/activity/:id', getDetailedActivity);
+    app.use('/app/v1', router);
   }
 }
 
