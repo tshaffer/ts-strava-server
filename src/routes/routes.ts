@@ -19,8 +19,9 @@ export class Routes {
     app.get('/index.html', getIndex);
     app.get('/css/app.css', getCSS);
     app.get('/build/bundle.js', getBundle);
-    app.get('/getActivities', getActivities);
-    app.get('/getDetailedActivity', getDetailedActivity);
-    app.get('/getAthletes', getAthletes);
+    app.get('/app/v1/activities', getActivities);
+    // app.get('/app/v1/activity/:id', getDetailedActivity);
+    app.get('/app/v1/activity', getDetailedActivity);
+    app.get('/app/v1/athletes', getAthletes);
   }
 }

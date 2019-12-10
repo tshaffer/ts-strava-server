@@ -132,7 +132,8 @@ function getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity: Str
 
 export function getDetailedActivity(request: Request, response: Response): Promise<any> {
 
-  const activityId: string = request.query.activityId;
+  // const activityId: string = request.query.activityId;
+  const activityId: string = request.query.id;
 
   let accessToken: any;
   let detailedActivity: StravatronDetailedActivity;
