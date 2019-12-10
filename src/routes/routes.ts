@@ -20,8 +20,7 @@ export class Routes {
     app.get('/css/app.css', getCSS);
     app.get('/build/bundle.js', getBundle);
     app.get('/app/v1/activities', getActivities);
-    // app.get('/app/v1/activity/:id', getDetailedActivity);
-    app.get('/app/v1/activity', getDetailedActivity);
+    app.get('/app/v1/activity/:id', getDetailedActivity);
     app.get('/app/v1/athletes', getAthletes);
   }
 }
