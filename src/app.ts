@@ -1,5 +1,6 @@
 import * as bodyParser from 'body-parser';
 import express from 'express';
+import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import * as path from 'path';
 
@@ -15,6 +16,9 @@ class App {
   public route: Routes = new Routes();
 
   constructor() {
+
+    // load env variables
+    dotenv.config( { path: './config/config.env' });
 
     this.app = express();
     this.config();
@@ -44,10 +48,11 @@ class App {
 
     this.app.use(bodyParser.json());
 
-    let port: any = process.env.PORT;
-    if (port === undefined || port === null || port === '') {
-      port = 8000;
-    }
+    const port = process.env.PORT || 8000;
+    // let port: any = process.env.PORT;
+    // if (port === undefined || port === null || port === '') {
+    //   port = 8000;
+    // }
     this.app.set('port', port);
   }
 }

@@ -175,6 +175,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
 
       const stravatronStreamData: StravatronStreams = getStreamData(streams);
 
+      // TEDTODO - put elsewhere
       detailedActivityAttributes =
         {
           achievementCount: detailedActivity.achievementCount,
