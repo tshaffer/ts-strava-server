@@ -9,4 +9,4 @@ import {
 activitiesRouter.get('/activities', getActivities);
 activitiesRouter.get('/activity/:id', getDetailedActivity);
 
-module.exports = activitiesRouter;
+export default activitiesRouter;
