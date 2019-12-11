@@ -1,13 +1,14 @@
 import * as bodyParser from 'body-parser';
 import express from 'express';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+// import mongoose from 'mongoose';
 import * as path from 'path';
-
+// const connectDB = require('../config/db');
+import connectDB from './config/db';
 
 import { Routes } from './routes/routes';
 import activitiesRouter from './routes/activities';
-const mongoDB = 'mongodb://ted:stravaTed-0524@ds063449.mlab.com:63449/stravatron';
+// const mongoDB = 'mongodb://ted:stravaTed-0524@ds063449.mlab.com:63449/stravatron';
 // const mongoDB = process.env.MONGOLAB_URI; 
 
 class App {
@@ -20,6 +21,8 @@ class App {
     // load env variables
     dotenv.config( { path: './config/config.env' });
 
+    connectDB();
+
     this.app = express();
     this.config();
     
@@ -29,16 +32,16 @@ class App {
 
     // Workaround to allow empty strings
     // https://github.com/Automattic/mongoose/issues/7150
-    const Str = mongoose.Schema.Types.String as any;
-    Str.checkRequired((v: any) => v != null);
+    // const Str = mongoose.Schema.Types.String as any;
+    // Str.checkRequired((v: any) => v != null);
 
-    mongoose.connect(mongoDB);
-    mongoose.Promise = global.Promise;
-    const db = mongoose.connection;
-    db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-    db.once('open', function callback() {
-      console.log('stravatron db open successful');
-    });
+    // mongoose.connect(mongoDB);
+    // mongoose.Promise = global.Promise;
+    // const db = mongoose.connection;
+    // db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+    // db.once('open', function callback() {
+    //   console.log('stravatron db open successful');
+    // });
 
     console.log('end of constructor');
   }
