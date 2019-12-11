@@ -1,17 +1,12 @@
 import express from 'express';
-const router = express.Router();
+const activitiesRouter = express.Router();
 
 import { 
   getActivities,
   getDetailedActivity,
  } from '../controllers';
 
-export class ActivitiesRoutes {
+activitiesRouter.get('/activities', getActivities);
+activitiesRouter.get('/activity/:id', getDetailedActivity);
 
-  public routes(app: express.Application): void {
-    router.get('/activities', getActivities);
-    router.get('/activity/:id', getDetailedActivity);
-    app.use('/app/v1', router);
-  }
-}
-
+module.exports = activitiesRouter;
