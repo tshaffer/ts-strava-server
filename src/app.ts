@@ -19,11 +19,23 @@ class App {
   constructor() {
 
     // load env variables
-    dotenv.config( { path: './config/config.env' });
+
+    dotenv.config( { path: './ts-strava-server/src/config/config.env' });
+    // dotenv.config( { path: '/Users/tedshaffer/Documents/Projects/ts-strava/ts-strava-server/src/config/config.env'});
+    console.log('port env: ' + process.env.PORT);
 
     connectDB();
 
     this.app = express();
+
+    const logger = (request: Request, response: Response, next: any) => {
+      (request as any).hello = 'hello world';
+      console.log('middleware ran');
+      next();
+    };
+
+    this.app.use(logger as any);
+
     this.config();
     
     this.route.routes(this.app);
