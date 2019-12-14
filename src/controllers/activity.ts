@@ -30,6 +30,8 @@ function getSecondsSinceLastFetch(): number {
 
 export function getActivities(request: Request, response: Response) {
 
+  console.log('getActivities handler:');
+
   return retrieveAccessToken()
     .then((accessToken: any) => {
 

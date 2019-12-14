@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 
 const connectDB = async () => {
+  console.log('uri is:');
+  console.log(process.env.MONGO_URI);
   const conn = await mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useCreateIndex: true,
@@ -8,7 +10,7 @@ const connectDB = async () => {
   });
 
   // console.log(`MongoDB Connected: ${conn.connection.host}`);
-  console.log(`MongoDB Connected: ${conn.connection}`);
+  // console.log(`MongoDB Connected: ${conn.connection}`);
 };
 
 export default connectDB;

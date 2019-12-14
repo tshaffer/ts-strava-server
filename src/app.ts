@@ -1,3 +1,4 @@
+import { Request, Response } from 'express';
 import * as bodyParser from 'body-parser';
 import express from 'express';
 import dotenv from 'dotenv';
@@ -29,8 +30,7 @@ class App {
     this.app = express();
 
     const logger = (request: Request, response: Response, next: any) => {
-      (request as any).hello = 'hello world';
-      console.log('middleware ran');
+      console.log(`${request.method} ${request.protocol}://${request.get('host')}${request.originalUrl}`);
       next();
     };
 
