@@ -1,11 +1,8 @@
-import { Request, Response } from 'express';
 import * as bodyParser from 'body-parser';
 import express from 'express';
 import dotenv from 'dotenv';
-// import mongoose from 'mongoose';
-import * as path from 'path';
-// const connectDB = require('../config/db');
 import connectDB from './config/db';
+import logger from './middleware/logger';
 
 import { Routes } from './routes/routes';
 import activitiesRouter from './routes/activities';
@@ -29,12 +26,7 @@ class App {
 
     this.app = express();
 
-    const logger = (request: Request, response: Response, next: any) => {
-      console.log(`${request.method} ${request.protocol}://${request.get('host')}${request.originalUrl}`);
-      next();
-    };
-
-    this.app.use(logger as any);
+    this.app.use(logger);
 
     this.config();
     
