@@ -80,6 +80,12 @@
       "resolved": "https://registry.npmjs.org/@types/mongoose/-/mongoose-5.3.12.tgz",
       "dev": true
     },
+    "@types/morgan": {
+      "version": "1.7.37",
+      "from": "@types/morgan@latest",
+      "resolved": "https://registry.npmjs.org/@types/morgan/-/morgan-1.7.37.tgz",
+      "dev": true
+    },
     "@types/node": {
       "version": "10.14.18",
       "from": "@types/node@10.14.18",
@@ -304,6 +310,11 @@
           "dev": true
         }
       }
+    },
+    "basic-auth": {
+      "version": "2.0.1",
+      "from": "basic-auth@>=2.0.0 <2.1.0",
+      "resolved": "https://registry.npmjs.org/basic-auth/-/basic-auth-2.0.1.tgz"
     },
     "bcrypt-pbkdf": {
       "version": "1.0.2",
@@ -1857,6 +1868,23 @@
       "from": "mongoose-legacy-pluralize@1.0.2",
       "resolved": "https://registry.npmjs.org/mongoose-legacy-pluralize/-/mongoose-legacy-pluralize-1.0.2.tgz"
     },
+    "morgan": {
+      "version": "1.9.1",
+      "from": "morgan@1.9.1",
+      "resolved": "https://registry.npmjs.org/morgan/-/morgan-1.9.1.tgz",
+      "dependencies": {
+        "debug": {
+          "version": "2.6.9",
+          "from": "debug@2.6.9",
+          "resolved": "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz"
+        },
+        "ms": {
+          "version": "2.0.0",
+          "from": "ms@2.0.0",
+          "resolved": "https://registry.npmjs.org/ms/-/ms-2.0.0.tgz"
+        }
+      }
+    },
     "mpath": {
       "version": "0.6.0",
       "from": "mpath@0.6.0",
@@ -1961,6 +1989,11 @@
       "version": "2.3.0",
       "from": "on-finished@>=2.3.0 <2.4.0",
       "resolved": "https://registry.npmjs.org/on-finished/-/on-finished-2.3.0.tgz"
+    },
+    "on-headers": {
+      "version": "1.0.2",
+      "from": "on-headers@>=1.0.1 <1.1.0",
+      "resolved": "https://registry.npmjs.org/on-headers/-/on-headers-1.0.2.tgz"
     },
     "once": {
       "version": "1.4.0",

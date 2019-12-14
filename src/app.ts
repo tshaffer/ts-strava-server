@@ -3,6 +3,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import logger from './middleware/logger';
+import morgan from 'morgan';
 
 import { Routes } from './routes/routes';
 import activitiesRouter from './routes/activities';
@@ -26,7 +27,12 @@ class App {
 
     this.app = express();
 
-    this.app.use(logger);
+    // this.app.use(logger);
+    // Dev logging middleware
+    if (process.env.NODE_ENV === 'development') {
+      console.log('use morgan');
+      this.app.use(morgan('dev'));
+    }
 
     this.config();
     
