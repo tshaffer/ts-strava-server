@@ -20,11 +20,11 @@ const ActivitySchema = new Schema(
     city: { type: String },
     country: { type: String, required: true },
     state: { type: String },
-    // map: {
-    //   id: { type: String, required: true },
-    //   polyline: { type: String },
-    //   summary_polyline: { type: String },
-    // },
+    map: {
+      id: { type: String, required: true },
+      polyline: { type: String },
+      summary_polyline: { type: String },
+    },
     maxSpeed: { type: Number, required: true },
     movingTime: { type: Number, required: true },
     name: { type: String, required: true },

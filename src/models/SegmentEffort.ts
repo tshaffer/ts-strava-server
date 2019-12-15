@@ -14,7 +14,11 @@ const SegmentEffortSchema = new Schema(
     distance: { type: Number, required: true },
     averageWatts: { type: Number, required: true },
     prRank: { type: Number },
-    // achievements: StravatronAchievement[];
+    achievements: [{
+      achievementType: String,
+      rank: Number,
+      typeId: Number,
+    }],
     averageCadence: { type: Number, required: true },
     averageHeartrate: { type: Number, required: true },
     deviceWatts: { type: Boolean },
