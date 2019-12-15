@@ -4,6 +4,7 @@ import { fetchSummaryActivities, retrieveAccessToken, fetchDetailedActivity } fr
 import { StravaNativeDetailedSegment, StravatronDetailedActivity, StravatronSegmentEffort, StravatronDetailedActivityAttributes, StravatronStreams, StravatronStream, StravatronDetailedSegment, StravatronSegmentEffortsForSegment, StravatronSummaryActivity, StravatronDetailedActivityData, StravaNativeDetailedActivity } from '../type';
 import { fetchStreams, fetchSegment, fetchAllEfforts, transformStravaDetailedActivity } from './strava';
 import Activity from '../models/Activity';
+import Segment from '../models/Segment';
 
 function getSecondsSinceLastFetch(): number {
 
@@ -224,7 +225,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
         bestEfforts: detailedActivity.bestEfforts,
       };
 
-      return addActivityToDb(detailedActivityAttributes).then( () => {
+      return addActivityToDb(detailedActivityAttributes).then(() => {
         const detailedActivityData: StravatronDetailedActivityData = {
           detailedActivityAttributes,
           streams: stravatronStreamData,
@@ -308,5 +309,34 @@ export function createActivity(request: Request, response: Response, next: any) 
       success: true,
       data: activity,
     });
+  });
+}
+
+export function createSegment(request: Request, response: Response, next: any) {
+  console.log('createSegment');
+  console.log(request.body);
+  Segment.create(request.body).then((segment: any) => {
+    response.status(201).json({
+      success: true,
+      data: segment,
+    });
+  });
+}
+
+export function createSegmentEffort(request: Request, response: Response, next: any) {
+  console.log('createSegmentEffort');
+  console.log(request.body);
+  response.status(201).json({
+    success: true,
+    data: null,
+  });
+}
+
+export function createStream(request: Request, response: Response, next: any) {
+  console.log('createStream');
+  console.log(request.body);
+  response.status(201).json({
+    success: true,
+    data: null,
   });
 }
