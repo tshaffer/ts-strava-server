@@ -12,4 +12,11 @@ const server = app.listen(app.get('port'), () => {
   console.log('  Press CTRL-C to stop\n');
 });
 
+// Handle unhandled promise rejection
+process.on('unhandledRejection', (err: any, promise: any) => {
+  console.log(`Error: ${err.message}`);
+  // Close server and exit process
+  server.close(() => process.exit(1));
+});
+
 export default server;

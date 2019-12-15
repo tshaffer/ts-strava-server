@@ -2,7 +2,7 @@ import * as bodyParser from 'body-parser';
 import express from 'express';
 import dotenv from 'dotenv';
 import connectDB from './config/db';
-import logger from './middleware/logger';
+// import logger from './middleware/logger';
 import morgan from 'morgan';
 
 import { Routes } from './routes/routes';
@@ -37,7 +37,7 @@ class App {
     this.config();
     
     this.route.routes(this.app);
-    this.app.use('/app/v1', activitiesRouter);
+    this.app.use('/api/v1', activitiesRouter);
 
 
     // Workaround to allow empty strings
