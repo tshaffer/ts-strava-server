@@ -26,6 +26,14 @@ class App {
     connectDB();
 
     this.app = express();
+    this.config();
+
+    // // Body parser
+    // this.app.use(bodyParser.urlencoded({
+    //   extended: true,
+    // }));
+
+    // this.app.use(bodyParser.json());
 
     // this.app.use(logger);
     // Dev logging middleware
@@ -34,7 +42,7 @@ class App {
       this.app.use(morgan('dev'));
     }
 
-    this.config();
+    // this.config();
     
     this.route.routes(this.app);
     this.app.use('/api/v1', activitiesRouter);
