@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { fetchSummaryActivities, retrieveAccessToken, fetchDetailedActivity } from '../controllers';
 import { StravaNativeDetailedSegment, StravatronDetailedActivity, StravatronSegmentEffort, StravatronDetailedActivityAttributes, StravatronStreams, StravatronStream, StravatronDetailedSegment, StravatronSegmentEffortsForSegment, StravatronSummaryActivity, StravatronDetailedActivityData, StravaNativeDetailedActivity } from '../type';
 import { fetchStreams, fetchSegment, fetchAllEfforts, transformStravaDetailedActivity } from './strava';
+import Activity from '../models/Activity';
 
 function getSecondsSinceLastFetch(): number {
 
@@ -179,57 +180,59 @@ export function getDetailedActivity(request: Request, response: Response): Promi
 
       // TEDTODO - put elsewhere
       detailedActivityAttributes =
-        {
-          achievementCount: detailedActivity.achievementCount,
-          athleteId: detailedActivity.athleteId,
-          averageSpeed: detailedActivity.averageSpeed,
-          averageTemp: detailedActivity.averageTemp,
-          averageWatts: detailedActivity.averageWatts,
-          deviceWatts: detailedActivity.deviceWatts,
-          distance: detailedActivity.distance,
-          elapsedTime: detailedActivity.elapsedTime,
-          elevHigh: detailedActivity.elevHigh,
-          elevLow: detailedActivity.elevLow,
-          endLatlng: detailedActivity.endLatlng,
-          id: detailedActivity.id,
-          kilojoules: detailedActivity.kilojoules,
-          city: detailedActivity.city,
-          country: detailedActivity.country,
-          state: detailedActivity.state,
-          map: detailedActivity.map,
-          maxSpeed: detailedActivity.maxSpeed,
-          movingTime: detailedActivity.movingTime,
-          name: detailedActivity.name,
-          prCount: detailedActivity.prCount,
-          resourceState: detailedActivity.resourceState,
-          startDate: detailedActivity.startDate,
-          startDateLocal: detailedActivity.startDateLocal,
-          startLatitude: detailedActivity.startLatitude,
-          startLatlng: detailedActivity.startLatlng,
-          startLongitude: detailedActivity.startLongitude,
-          timezone: detailedActivity.timezone,
-          totalElevationGain: detailedActivity.totalElevationGain,
-          weightedAverageWatts: detailedActivity.weightedAverageWatts,
-          description: detailedActivity.description,
-          calories: detailedActivity.calories,
-          averageCadence: detailedActivity.averageCadence,
-          averageHeartrate: detailedActivity.averageHeartrate,
-          deviceName: detailedActivity.deviceName,
-          hasHeartrate: detailedActivity.hasHeartrate,
-          maxHeartrate: detailedActivity.maxHeartrate,
-          maxWatts: detailedActivity.maxWatts,
-          type: detailedActivity.type,
-          utcOffset: detailedActivity.utcOffset,
-          bestEfforts: detailedActivity.bestEfforts,
-        };
-
-      const detailedActivityData: StravatronDetailedActivityData = {
-        detailedActivityAttributes,
-        streams: stravatronStreamData,
-        segments,
-        allSegmentEffortsForSegmentsInActivity,
+      {
+        achievementCount: detailedActivity.achievementCount,
+        athleteId: detailedActivity.athleteId,
+        averageSpeed: detailedActivity.averageSpeed,
+        averageTemp: detailedActivity.averageTemp,
+        averageWatts: detailedActivity.averageWatts,
+        deviceWatts: detailedActivity.deviceWatts,
+        distance: detailedActivity.distance,
+        elapsedTime: detailedActivity.elapsedTime,
+        elevHigh: detailedActivity.elevHigh,
+        elevLow: detailedActivity.elevLow,
+        endLatlng: detailedActivity.endLatlng,
+        id: detailedActivity.id,
+        kilojoules: detailedActivity.kilojoules,
+        city: detailedActivity.city,
+        country: detailedActivity.country,
+        state: detailedActivity.state,
+        map: detailedActivity.map,
+        maxSpeed: detailedActivity.maxSpeed,
+        movingTime: detailedActivity.movingTime,
+        name: detailedActivity.name,
+        prCount: detailedActivity.prCount,
+        resourceState: detailedActivity.resourceState,
+        startDate: detailedActivity.startDate,
+        startDateLocal: detailedActivity.startDateLocal,
+        startLatitude: detailedActivity.startLatitude,
+        startLatlng: detailedActivity.startLatlng,
+        startLongitude: detailedActivity.startLongitude,
+        timezone: detailedActivity.timezone,
+        totalElevationGain: detailedActivity.totalElevationGain,
+        weightedAverageWatts: detailedActivity.weightedAverageWatts,
+        description: detailedActivity.description,
+        calories: detailedActivity.calories,
+        averageCadence: detailedActivity.averageCadence,
+        averageHeartrate: detailedActivity.averageHeartrate,
+        deviceName: detailedActivity.deviceName,
+        hasHeartrate: detailedActivity.hasHeartrate,
+        maxHeartrate: detailedActivity.maxHeartrate,
+        maxWatts: detailedActivity.maxWatts,
+        type: detailedActivity.type,
+        utcOffset: detailedActivity.utcOffset,
+        bestEfforts: detailedActivity.bestEfforts,
       };
-      response.json(detailedActivityData);
+
+      return addActivityToDb(detailedActivityAttributes).then( () => {
+        const detailedActivityData: StravatronDetailedActivityData = {
+          detailedActivityAttributes,
+          streams: stravatronStreamData,
+          segments,
+          allSegmentEffortsForSegmentsInActivity,
+        };
+        response.json(detailedActivityData);
+      });
     });
 }
 
@@ -287,4 +290,23 @@ function getStreamData(stravaStreams: StravatronStream[]): StravatronStreams {
   };
 
   return streamData;
+}
+
+function addActivityToDb(detailedActivityAttributes: any) {
+  return Activity.create(detailedActivityAttributes).then((activity: any) => {
+    console.log('activity added to database: ' + activity);
+    Promise.resolve();
+  });
+}
+
+// TEST only
+export function createActivity(request: Request, response: Response, next: any) {
+  console.log('createActivity');
+  console.log(request.body);
+  Activity.create(request.body).then((activity: any) => {
+    response.status(201).json({
+      success: true,
+      data: activity,
+    });
+  });
 }
