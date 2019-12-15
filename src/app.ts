@@ -1,14 +1,11 @@
-import * as bodyParser from 'body-parser';
 import express from 'express';
 import dotenv from 'dotenv';
 import connectDB from './config/db';
-// import logger from './middleware/logger';
 import morgan from 'morgan';
 
 import { Routes } from './routes/routes';
 import activitiesRouter from './routes/activities';
 // const mongoDB = 'mongodb://ted:stravaTed-0524@ds063449.mlab.com:63449/stravatron';
-// const mongoDB = process.env.MONGOLAB_URI; 
 
 class App {
 
@@ -28,21 +25,14 @@ class App {
     this.app = express();
     this.config();
 
-    // // Body parser
-    // this.app.use(bodyParser.urlencoded({
-    //   extended: true,
-    // }));
-
-    // this.app.use(bodyParser.json());
+    // Body parser
+    this.app.use(express.json());
 
     // this.app.use(logger);
     // Dev logging middleware
     if (process.env.NODE_ENV === 'development') {
-      console.log('use morgan');
       this.app.use(morgan('dev'));
     }
-
-    // this.config();
     
     this.route.routes(this.app);
     this.app.use('/api/v1', activitiesRouter);
@@ -66,11 +56,6 @@ class App {
 
   private config(): void {
 
-    this.app.use(bodyParser.urlencoded({
-      extended: true,
-    }));
-
-    this.app.use(bodyParser.json());
 
     const port = process.env.PORT || 8000;
     this.app.set('port', port);
