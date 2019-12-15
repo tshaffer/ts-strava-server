@@ -26,7 +26,10 @@ class App {
     this.config();
 
     // Body parser
-    this.app.use(express.json());
+    // this.app.use(express.json());
+    this.app.use(express.json({
+      limit: '100mb',
+    }));
 
     // this.app.use(logger);
     // Dev logging middleware

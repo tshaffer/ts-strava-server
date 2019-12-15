@@ -6,6 +6,7 @@ import { fetchStreams, fetchSegment, fetchAllEfforts, transformStravaDetailedAct
 import Activity from '../models/Activity';
 import Segment from '../models/Segment';
 import SegmentEffort from '../models/SegmentEffort';
+import ActivityStreams from '../models/ActivityStreams';
 
 function getSecondsSinceLastFetch(): number {
 
@@ -105,7 +106,7 @@ function getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity: Str
       for (const achievement of effortForSegment.achievements) {
         achievements.push({
           rank: achievement.rank,
-          type: achievement.type,
+          type: achievement.achievementType,
           typeId: achievement.typeId,
         });
       }
@@ -337,9 +338,74 @@ export function createSegmentEffort(request: Request, response: Response, next: 
 
 export function createStream(request: Request, response: Response, next: any) {
   console.log('createStream');
-  console.log(request.body);
-  response.status(201).json({
-    success: true,
-    data: null,
+  // console.log(request.body);
+  const bodySize = roughSizeOfObject(request.body);
+  console.log('bodySize: ' + bodySize);
+  ActivityStreams.create(request.body).then((activityStreams: any) => {
+    response.status(201).json({
+      success: true,
+      data: activityStreams,
+    });
   });
+}
+
+export function getStreams(request: Request, response: Response): Promise<any> {
+
+  const activityId: string = request.params.id;
+
+  let accessToken: any;
+
+  return retrieveAccessToken()
+
+    .then((accessTokenRet: any) => {
+
+      accessToken = accessTokenRet;
+      return fetchStreams(accessToken, activityId);
+
+    }).then((streams: StravatronStream[]) => {
+
+      const stravatronStreamData: StravatronStreams = getStreamData(streams);
+      console.log(stravatronStreamData);
+
+      return response.status(201).json({
+        success: true,
+        data: stravatronStreamData,
+      });
+
+    });
+}
+
+function roughSizeOfObject(object: any): number {
+
+  const objectList = [];
+  const stack = [object];
+  let bytes = 0;
+
+  while (stack.length) {
+    const value = stack.pop();
+
+    if (typeof value === 'boolean') {
+      bytes += 4;
+    }
+    else if (typeof value === 'string') {
+      bytes += value.length * 2;
+    }
+    else if (typeof value === 'number') {
+      bytes += 8;
+    }
+    else if
+      (
+      typeof value === 'object'
+      && objectList.indexOf(value) === -1
+    ) {
+      objectList.push(value);
+
+      for (const i in value) {
+        if (value[i]) {
+          stack.push(value[i]);
+        }
+      }
+    }
+  }
+  return bytes;
 }

@@ -156,7 +156,7 @@ export function transformStravaDetailedActivity(stravaDetailedActivity: StravaNa
     const achievements: StravatronAchievement[] = [];
     for (const stravaAchievement of stravaNativeSegmentEffort.achievements) {
       const achievement: StravatronAchievement = {
-        type: stravaAchievement.type,
+        achievementType: stravaAchievement.type,
         rank: stravaAchievement.rank,
         typeId: stravaAchievement.type_id,
       };
@@ -287,7 +287,7 @@ function transformStravaDetailedSegmentEffort(stravaDetailedSegmentEffort: Strav
   const achievements: StravatronAchievement[] = [];
   for (const achievement of stravaDetailedSegmentEffort.achievements) {
     achievements.push({
-      type: achievement.type,
+      achievementType: achievement.type,
       rank: achievement.rank,
       typeId: achievement.type_id,
     });

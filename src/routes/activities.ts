@@ -9,6 +9,7 @@ import {
   createSegment,
   createSegmentEffort,
   createStream,
+  getStreams,
  } from '../controllers';
 
 activitiesRouter.get('/activities', getActivities);
@@ -20,5 +21,6 @@ activitiesRouter.post('/activity', createActivity);
 activitiesRouter.post('/segment', createSegment);
 activitiesRouter.post('/segmentEffort', createSegmentEffort);
 activitiesRouter.post('/stream', createStream);
+activitiesRouter.get('/stream/:id', getStreams);
 
 export default activitiesRouter;

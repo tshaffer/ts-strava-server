@@ -39,7 +39,7 @@ export interface StravatronDetailedSegment {
 }
 
 export interface StravatronAchievement {
-  type: string;
+  achievementType: string;
   rank: number;
   typeId: number;
 }
