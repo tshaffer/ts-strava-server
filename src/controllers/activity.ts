@@ -5,6 +5,7 @@ import { StravaNativeDetailedSegment, StravatronDetailedActivity, StravatronSegm
 import { fetchStreams, fetchSegment, fetchAllEfforts, transformStravaDetailedActivity } from './strava';
 import Activity from '../models/Activity';
 import Segment from '../models/Segment';
+import SegmentEffort from '../models/SegmentEffort';
 
 function getSecondsSinceLastFetch(): number {
 
@@ -326,9 +327,11 @@ export function createSegment(request: Request, response: Response, next: any) {
 export function createSegmentEffort(request: Request, response: Response, next: any) {
   console.log('createSegmentEffort');
   console.log(request.body);
-  response.status(201).json({
-    success: true,
-    data: null,
+  SegmentEffort.create(request.body).then((segmentEffort: any) => {
+    response.status(201).json({
+      success: true,
+      data: segmentEffort,
+    });
   });
 }
 

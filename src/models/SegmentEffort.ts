@@ -13,7 +13,7 @@ const SegmentEffortSchema = new Schema(
     startDateLocal: { type: Date, required: true },
     distance: { type: Number, required: true },
     averageWatts: { type: Number, required: true },
-    prRank: { type: Number, required: true },
+    prRank: { type: Number },
     // achievements: StravatronAchievement[];
     averageCadence: { type: Number, required: true },
     averageHeartrate: { type: Number, required: true },
