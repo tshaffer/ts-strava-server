@@ -12,7 +12,7 @@ const SegmentEffortSchema = new Schema(
     movingTime: { type: Number, required: true },
     startDateLocal: { type: Date, required: true },
     distance: { type: Number, required: true },
-    averageWatts: { type: Number, required: true },
+    averageWatts: { type: Number },
     prRank: { type: Number },
     achievements: [{
       achievementType: String,

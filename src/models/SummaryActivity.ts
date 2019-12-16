@@ -8,7 +8,7 @@ const SummaryActivitySchema = new Schema(
     athleteId: { type: Number, required: true },
     averageSpeed: { type: Number, required: true },
     averageTemp: { type: Number },
-    averageWatts: { type: Number, required: true },
+    averageWatts: { type: Number },
     deviceWatts: { type:  Boolean },
     distance: { type: Number, required: true },
     elapsedTime: { type: Number, required: true },

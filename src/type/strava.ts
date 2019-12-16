@@ -143,7 +143,7 @@ export interface StravaNativeSummaryActivity {
   has_kudoed: boolean;
   heartrate_opt_out: boolean;
   id: number;
-  kilojoules: number;
+  kilojoules?: number;
   kudos_count: number;
   location_city?: string; // always present but may be null
   location_country: string;

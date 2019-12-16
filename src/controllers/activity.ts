@@ -1,55 +1,72 @@
 import { Request, Response } from 'express';
 
 import { fetchSummaryActivities, retrieveAccessToken, fetchDetailedActivity } from '../controllers';
-import { StravaNativeDetailedSegment, StravatronDetailedActivity, StravatronSegmentEffort, StravatronDetailedActivityAttributes, StravatronStreams, StravatronStream, StravatronDetailedSegment, StravatronSegmentEffortsForSegment, StravatronSummaryActivity, StravatronDetailedActivityData, StravaNativeDetailedActivity } from '../type';
+import {
+  StravatronDetailedActivity,
+  StravatronSegmentEffort,
+  StravatronDetailedActivityAttributes,
+  StravatronStreams,
+  StravatronStream,
+  StravatronDetailedSegment,
+  StravatronSegmentEffortsForSegment,
+  StravatronSummaryActivity,
+  StravatronDetailedActivityData,
+  StravaNativeDetailedActivity,
+} from '../type';
 import { fetchStreams, fetchSegment, fetchAllEfforts, transformStravaDetailedActivity } from './strava';
 import Activity from '../models/Activity';
 import Segment from '../models/Segment';
 import SegmentEffort from '../models/SegmentEffort';
 import ActivityStreams from '../models/ActivityStreams';
-import SummaryActivity from '../models/SummaryActivity';
+import AppVariables from '../models/AppVariables';
+import { isArray } from 'util';
 
-function getSecondsSinceLastFetch(): number {
+function getSecondsSinceLastFetch(): Promise<number> {
 
-  // TEDTODO - see how this was done in strava classic
+  return new Promise((resolve, reject) => {
+    getDateOfLastFetchedActivityFromDb().then((dateOfLastFetchedActivity: Date) => {
+      console.log('Date of last fetched activity');
+      console.log(dateOfLastFetchedActivity);
 
-  // for afterDate, strava only seems to look at the date; that is, it doesn't look at the time
-  // therefore, jump to the next day - the result is that it's possible to lose an activity that occurs on
-  // the same date if the activities happen to fall on a page boundary
-  // const afterDate = new Date(dateOfLastFetchedActivity);
-  const afterDate = new Date('November 1, 2019 00:00:00');
-  afterDate.setDate(afterDate.getDate() + 1); // given how strava treats 'afterDate', the following shouldn't make any difference, but ....
-  afterDate.setHours(0);
-  afterDate.setMinutes(0);
-  afterDate.setSeconds(0);
-  afterDate.setMilliseconds(0);
-
-  let secondsSinceLastFetch = Math.floor(afterDate.getTime() / 1000);
-  if (secondsSinceLastFetch < 0) {
-    secondsSinceLastFetch = 0;
-  }
-
-  console.log('seconds since...');
-  return secondsSinceLastFetch;
+      let secondsSinceLastFetch = Math.floor(dateOfLastFetchedActivity.getTime() / 1000);
+      if (secondsSinceLastFetch < 0) {
+        secondsSinceLastFetch = 0;
+      }
+      resolve(secondsSinceLastFetch);
+    });
+  });
 }
 
 export function getActivities(request: Request, response: Response) {
 
   console.log('getActivities handler:');
 
-  return retrieveAccessToken()
+  retrieveAccessToken()
     .then((accessToken: any) => {
-      const secondsSinceLastFetch = getSecondsSinceLastFetch();
-      fetchSummaryActivities(accessToken, secondsSinceLastFetch)
-        .then((summaryActivities: StravatronSummaryActivity[]) => {
-          addSummaryActivitiesToDb(summaryActivities).then( () => {
+      getSecondsSinceLastFetch().then((secondsSinceLastFetch) => {
+        return fetchSummaryActivities(accessToken, secondsSinceLastFetch);
+      }).then((summaryActivities: StravatronSummaryActivity[]) => {
+        addSummaryActivitiesToDb(summaryActivities).then(() => {
+          const dateOfLastActivity = getDateOfLastFetchedActivity(summaryActivities);
+          console.log('dateOfLastActivity');
+          console.log(dateOfLastActivity);
+          setDateOfLastFetchedActivityInDb(dateOfLastActivity).then( () => {
             response.json(summaryActivities);
           });
         });
-    })
-    .catch((err: Error) => {
-      console.log('accessToken error: ', err);
+      });
     });
+}
+
+function getDateOfLastFetchedActivity(summaryActivities: StravatronSummaryActivity[]): Date {
+  let dateOfLastFetchedActivity = new Date(1970, 0, 0, 0, 0, 0, 0);
+  for (const summaryActivity of summaryActivities) {
+    const activityDate = new Date(summaryActivity.startDateLocal);
+    if (activityDate.getTime() > dateOfLastFetchedActivity.getTime()) {
+      dateOfLastFetchedActivity = activityDate;
+    }
+  }
+  return dateOfLastFetchedActivity;
 }
 
 function addSummaryActivitiesToDb(summaryActivities: StravatronSummaryActivity[]): Promise<void> {
@@ -69,6 +86,17 @@ function addSummaryActivitiesToDb(summaryActivities: StravatronSummaryActivity[]
   };
 
   return addNextSummaryActivity(0);
+}
+
+function setDateOfLastFetchedActivityInDb(dateOfLastFetchedActivity: Date): Promise<void> {
+  
+  const appVariables: any = {
+    dateOfLastFetchedActivity,
+  };
+
+  return AppVariables.create(appVariables).then( () => {
+    return Promise.resolve();
+  });
 }
 
 function getAllEffortsForAllSegments(accessToken: any, athleteId: string, segmentIds: number[]): Promise<StravatronSegmentEffortsForSegment[]> {
@@ -320,6 +348,26 @@ function addActivityToDb(detailedActivityAttributes: any) {
   return Activity.create(detailedActivityAttributes).then((activity: any) => {
     console.log('activity added to database: ' + activity);
     Promise.resolve();
+  });
+}
+
+function getDateOfLastFetchedActivityFromDb(): Promise<Date> {
+
+  const beginningOfTime = new Date(1970, 0, 0, 0, 0, 0, 0);
+
+  const query = AppVariables.find({});
+  const promise: Promise<Array<import('mongoose').Document>> = query.exec();
+
+  return new Promise((resolve, reject) => {
+    promise.then((appVariablesDocs: any[]) => {
+      if (isArray(appVariablesDocs) && appVariablesDocs.length > 0) {
+        return resolve(appVariablesDocs[0].dateOfLastActivity);
+      } else {
+        return resolve(beginningOfTime);
+      }
+    }).catch((err: Error) => {
+      return resolve(beginningOfTime);
+    })
   });
 }
 

@@ -53,7 +53,7 @@ export interface StravatronSegmentEffort {
   movingTime: number;
   startDateLocal: Date;
   distance: number;
-  averageWatts: number;
+  averageWatts?: number;
   prRank: number;
   achievements: StravatronAchievement[];
   averageCadence: number;
@@ -88,7 +88,7 @@ export interface StravatronSummaryActivity {
   athleteId: number;
   averageSpeed: number;
   averageTemp?: number;
-  averageWatts: number;
+  averageWatts?: number;
   deviceWatts?: boolean;
   distance: number;
   elapsedTime: number;
@@ -96,7 +96,7 @@ export interface StravatronSummaryActivity {
   elevLow?: number;
   endLatlng: StravaNativeLatLng;
   id: number;
-  kilojoules: number;
+  kilojoules?: number;
   city?: string;
   country: string;
   state?: string;
@@ -138,7 +138,7 @@ export interface StravatronDetailedActivityAttributes {
   athleteId: number;
   averageSpeed: number;
   averageTemp?: number;
-  averageWatts: number;
+  averageWatts?: number;
   deviceWatts?: boolean;
   distance: number;
   elapsedTime: number;
@@ -146,7 +146,7 @@ export interface StravatronDetailedActivityAttributes {
   elevLow?: number;
   endLatlng: StravaNativeLatLng;
   id: number;
-  kilojoules: number;
+  kilojoules?: number;
   city?: string;
   country: string;
   state?: string;
