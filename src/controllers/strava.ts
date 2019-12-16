@@ -78,7 +78,7 @@ export function fetchSummaryActivities(accessToken: string, secondsSinceEpochOfL
     const path = 'athlete/activities?after=' + secondsSinceEpochOfLastActivity.toString();
 
     fetchStravaData(path, accessToken)
-      .then((stravaSummaryActivities: any[]) => {
+      .then((stravaSummaryActivities: StravaNativeSummaryActivity[]) => {
         const activities = transformStravaSummaryActivities(stravaSummaryActivities);
         resolve(activities);
       });

@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 
 import SummaryActivity from '../models/SummaryActivity';
 
+// test function
+
 export function createSummaryActivity(request: Request, response: Response, next: any) {
   console.log(createSummaryActivity);
   console.log(request.body);

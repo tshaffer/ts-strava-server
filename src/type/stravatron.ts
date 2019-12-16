@@ -177,3 +177,4 @@ export interface StravatronDetailedActivityAttributes {
   bestEfforts?: any; // DetailedSegmentEffort or DetailedSegmentEffort[] ??
 }
 
+  

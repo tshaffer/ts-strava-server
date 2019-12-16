@@ -7,6 +7,7 @@ import Activity from '../models/Activity';
 import Segment from '../models/Segment';
 import SegmentEffort from '../models/SegmentEffort';
 import ActivityStreams from '../models/ActivityStreams';
+import SummaryActivity from '../models/SummaryActivity';
 
 function getSecondsSinceLastFetch(): number {
 
@@ -38,16 +39,36 @@ export function getActivities(request: Request, response: Response) {
 
   return retrieveAccessToken()
     .then((accessToken: any) => {
-
       const secondsSinceLastFetch = getSecondsSinceLastFetch();
       fetchSummaryActivities(accessToken, secondsSinceLastFetch)
         .then((summaryActivities: StravatronSummaryActivity[]) => {
-          response.json(summaryActivities);
+          addSummaryActivitiesToDb(summaryActivities).then( () => {
+            response.json(summaryActivities);
+          });
         });
     })
     .catch((err: Error) => {
       console.log('accessToken error: ', err);
     });
+}
+
+function addSummaryActivitiesToDb(summaryActivities: StravatronSummaryActivity[]): Promise<void> {
+
+  const addNextSummaryActivity = (index: number): Promise<any> => {
+
+    if (index >= summaryActivities.length) {
+      return Promise.resolve();
+    }
+
+    const summaryActivity: StravatronSummaryActivity = summaryActivities[index];
+
+    return Activity.create(summaryActivity)
+      .then((addedActivity: any) => {
+        return addNextSummaryActivity(index + 1);
+      });
+  };
+
+  return addNextSummaryActivity(0);
 }
 
 function getAllEffortsForAllSegments(accessToken: any, athleteId: string, segmentIds: number[]): Promise<StravatronSegmentEffortsForSegment[]> {
