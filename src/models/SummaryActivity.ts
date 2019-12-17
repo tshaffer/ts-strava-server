@@ -15,7 +15,7 @@ const SummaryActivitySchema = new Schema(
     elevHigh: { type: Number },
     elevLow: { type: Number },
     // endLatlng: StravaNativeLatLng;
-    id: { type: Number, required: true },
+    id: { type: Number, required: true, unique: true },
   },
 );
 

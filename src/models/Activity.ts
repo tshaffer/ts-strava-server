@@ -15,7 +15,7 @@ const ActivitySchema = new Schema(
     elevHigh: { type: Number },
     elevLow: { type: Number },
     endLatlng: { type: [Number] },
-    id: { type: Number, required: true },
+    id: { type: Number, required: true, unique: true },
     kilojoules: { type: Number },
     city: { type: String },
     country: { type: String, required: true },

@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 const SegmentEffortSchema = new Schema(
   {
-    id: { type: Number, required: true },
+    id: { type: Number, required: true, unique: true },
     segmentId: { type: Number, required: true },
     name: { type: String, required: true },
     activityId: { type: Number, required: true },
