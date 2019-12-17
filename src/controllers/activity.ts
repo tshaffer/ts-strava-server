@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Document } from 'mongoose';
 
 import { fetchSummaryActivities, retrieveAccessToken, fetchDetailedActivity } from '../controllers';
 import {
@@ -88,14 +89,28 @@ function addSummaryActivitiesToDb(summaryActivities: StravatronSummaryActivity[]
   return addNextSummaryActivity(0);
 }
 
+// https://stackoverflow.com/questions/39153460/whats-the-difference-between-findoneandupdate-and-findoneandreplace
+
 function setDateOfLastFetchedActivityInDb(dateOfLastFetchedActivity: Date): Promise<void> {
 
   const appVariables: any = {
     dateOfLastFetchedActivity,
   };
 
-  return AppVariables.create(appVariables).then(() => {
-    return Promise.resolve();
+  const query = AppVariables.find({});
+  const promise: Promise<Document[]> = query.exec();
+  return promise.then((appVariablesDocs: Document[]) => {
+    if (isArray(appVariablesDocs) && appVariablesDocs.length > 0) {
+      const appVariable: Document = appVariablesDocs[0];
+      (appVariable as any).dateOfLastFetchedActivity = dateOfLastFetchedActivity;
+      appVariable.save();
+      return Promise.resolve();
+    }
+    else {
+      return AppVariables.create(appVariables).then(() => {
+        return Promise.resolve();
+      });
+    }
   });
 }
 
@@ -362,8 +377,14 @@ function getDateOfLastFetchedActivityFromDb(): Promise<Date> {
     promise.then((appVariablesDocs: any[]) => {
       if (isArray(appVariablesDocs) && appVariablesDocs.length > 0) {
         const appVariables: any = appVariablesDocs[0].toObject();
+        const dateOfLastActivity: Date = appVariables.dateOfLastFetchedActivity;
+        dateOfLastActivity.setDate(dateOfLastActivity.getDate() + 1); // given how strava treats 'dateOfLastActivity', the following shouldn't make any difference, but ....
+        dateOfLastActivity.setHours(0);
+        dateOfLastActivity.setMinutes(0);
+        dateOfLastActivity.setSeconds(0);
+        dateOfLastActivity.setMilliseconds(0);
         return resolve(appVariables.dateOfLastFetchedActivity);
-      } 
+      }
       else {
         return resolve(beginningOfTime);
       }
