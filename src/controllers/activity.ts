@@ -50,7 +50,7 @@ export function getActivities(request: Request, response: Response) {
           const dateOfLastActivity = getDateOfLastFetchedActivity(summaryActivities);
           console.log('dateOfLastActivity');
           console.log(dateOfLastActivity);
-          setDateOfLastFetchedActivityInDb(dateOfLastActivity).then( () => {
+          setDateOfLastFetchedActivityInDb(dateOfLastActivity).then(() => {
             response.json(summaryActivities);
           });
         });
@@ -89,12 +89,12 @@ function addSummaryActivitiesToDb(summaryActivities: StravatronSummaryActivity[]
 }
 
 function setDateOfLastFetchedActivityInDb(dateOfLastFetchedActivity: Date): Promise<void> {
-  
+
   const appVariables: any = {
     dateOfLastFetchedActivity,
   };
 
-  return AppVariables.create(appVariables).then( () => {
+  return AppVariables.create(appVariables).then(() => {
     return Promise.resolve();
   });
 }
@@ -361,13 +361,16 @@ function getDateOfLastFetchedActivityFromDb(): Promise<Date> {
   return new Promise((resolve, reject) => {
     promise.then((appVariablesDocs: any[]) => {
       if (isArray(appVariablesDocs) && appVariablesDocs.length > 0) {
-        return resolve(appVariablesDocs[0].dateOfLastActivity);
-      } else {
+        const appVariables: any = appVariablesDocs[0].toObject();
+        return resolve(appVariables.dateOfLastFetchedActivity);
+      } 
+      else {
         return resolve(beginningOfTime);
       }
     }).catch((err: Error) => {
+      console.log('getDateOfLastFetchedActivity error: ' + err);
       return resolve(beginningOfTime);
-    })
+    });
   });
 }
 
