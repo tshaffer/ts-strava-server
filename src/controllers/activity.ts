@@ -22,19 +22,17 @@ import ActivityStreams from '../models/ActivityStreams';
 import AppVariables from '../models/AppVariables';
 import { isArray } from 'util';
 
-function getSecondsSinceLastFetch(): Promise<number> {
+function getSecondsSinceLastFetch(): Promise<any> {
 
-  return new Promise((resolve, reject) => {
-    getDateOfLastFetchedActivityFromDb().then((dateOfLastFetchedActivity: Date) => {
-      console.log('Date of last fetched activity');
-      console.log(dateOfLastFetchedActivity);
+  return getDateOfLastFetchedActivityFromDb().then((dateOfLastFetchedActivity: Date) => {
+    console.log('Date of last fetched activity');
+    console.log(dateOfLastFetchedActivity);
 
-      let secondsSinceLastFetch = Math.floor(dateOfLastFetchedActivity.getTime() / 1000);
-      if (secondsSinceLastFetch < 0) {
-        secondsSinceLastFetch = 0;
-      }
-      resolve(secondsSinceLastFetch);
-    });
+    let secondsSinceLastFetch = Math.floor(dateOfLastFetchedActivity.getTime() / 1000);
+    if (secondsSinceLastFetch < 0) {
+      secondsSinceLastFetch = 0;
+    }
+    return Promise.resolve(secondsSinceLastFetch);
   });
 }
 
@@ -373,25 +371,23 @@ function getDateOfLastFetchedActivityFromDb(): Promise<Date> {
   const query = AppVariables.find({});
   const promise: Promise<Array<import('mongoose').Document>> = query.exec();
 
-  return new Promise((resolve, reject) => {
-    promise.then((appVariablesDocs: any[]) => {
-      if (isArray(appVariablesDocs) && appVariablesDocs.length > 0) {
-        const appVariables: any = appVariablesDocs[0].toObject();
-        const dateOfLastActivity: Date = appVariables.dateOfLastFetchedActivity;
-        dateOfLastActivity.setDate(dateOfLastActivity.getDate() + 1); // given how strava treats 'dateOfLastActivity', the following shouldn't make any difference, but ....
-        dateOfLastActivity.setHours(0);
-        dateOfLastActivity.setMinutes(0);
-        dateOfLastActivity.setSeconds(0);
-        dateOfLastActivity.setMilliseconds(0);
-        return resolve(appVariables.dateOfLastFetchedActivity);
-      }
-      else {
-        return resolve(beginningOfTime);
-      }
-    }).catch((err: Error) => {
-      console.log('getDateOfLastFetchedActivity error: ' + err);
-      return resolve(beginningOfTime);
-    });
+  return promise.then((appVariablesDocs: any[]) => {
+    if (isArray(appVariablesDocs) && appVariablesDocs.length > 0) {
+      const appVariables: any = appVariablesDocs[0].toObject();
+      const dateOfLastActivity: Date = appVariables.dateOfLastFetchedActivity;
+      dateOfLastActivity.setDate(dateOfLastActivity.getDate() + 1); // given how strava treats 'dateOfLastActivity', the following shouldn't make any difference, but ....
+      dateOfLastActivity.setHours(0);
+      dateOfLastActivity.setMinutes(0);
+      dateOfLastActivity.setSeconds(0);
+      dateOfLastActivity.setMilliseconds(0);
+      return Promise.resolve(appVariables.dateOfLastFetchedActivity);
+    }
+    else {
+      return Promise.resolve(beginningOfTime);
+    }
+  }).catch((err: Error) => {
+    console.log('getDateOfLastFetchedActivity error: ' + err);
+    return Promise.resolve(beginningOfTime);
   });
 }
 
