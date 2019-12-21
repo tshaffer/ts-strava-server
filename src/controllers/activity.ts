@@ -172,7 +172,6 @@ export function getDetailedActivity(request: Request, response: Response): Promi
       }).then((allEffortsForSegmentsInCurrentActivity) => {
 
         allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
-        // add segment efforts to db
 
         return fetchStreams(accessToken, activityId);
 
@@ -268,6 +267,8 @@ function getAllEffortsForAllSegments(accessToken: any, athleteId: string, segmen
     return fetchAllEfforts(accessToken, athleteId, segmentId)
       .then((segmentEffortsForSegment: StravatronSegmentEffortsForSegment) => {
         allEffortsForSegmentsInCurrentActivity.push(segmentEffortsForSegment);
+        return addSegmentEffortsToDb(segmentEffortsForSegment);
+      }).then( () => {
         return setSegmentEffortsLoaded(segmentId);
       }).then(() => {
         return getNextEffortsForSegment(index + 1);
@@ -492,6 +493,18 @@ function addSegmentsToDb(detailedSegments: StravatronDetailedSegment[]): Promise
   }
   return Segment.collection.insertMany(
     detailedSegments,
+    {
+      ordered: false,
+    },
+  );
+}
+
+function addSegmentEffortsToDb(segmentEfforts: StravatronSegmentEffort[]): Promise<any> {
+  if (segmentEfforts.length === 0) {
+    return Promise.resolve();
+  }
+  return SegmentEffort.collection.insertMany(
+    segmentEfforts,
     {
       ordered: false,
     },

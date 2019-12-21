@@ -346,6 +346,7 @@ function transformStravaSegment(stravaSegment: StravaNativeDetailedSegment): Str
     totalElevationGain: stravaSegment.total_elevation_gain,
     map: stravaSegment.map,
     effortCount: stravaSegment.effort_count,
+    allEffortsLoaded: false,
   };
   return stravatronDetailedSegment;
 }
