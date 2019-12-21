@@ -1,3 +1,5 @@
+import { isNil, isArray } from 'lodash';
+
 import { Request, Response } from 'express';
 import { Document } from 'mongoose';
 
@@ -20,7 +22,6 @@ import Segment from '../models/Segment';
 import SegmentEffort from '../models/SegmentEffort';
 import ActivityStreams from '../models/ActivityStreams';
 import AppVariables from '../models/AppVariables';
-import { isArray } from 'util';
 
 interface DbSegmentData {
   segmentIdsNotInDb: number[];
@@ -156,22 +157,17 @@ export function getDetailedActivity(request: Request, response: Response): Promi
         }
 
         // get the segments that are in the database already and fetch the
-        // segments that are not in the database from strava.
+        // segments that are not in the database from strava (and add them to the db)
         return getSegments(accessToken, segmentIds);
 
       }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
 
         segments = detailedSegmentsRet;
 
-        // add segments to db
-        // return addSegmentsToDb(segments);
-
-      // }).then((segmentDocsAdded: any[]) => {
-
         const athleteId = '2843574';            // pa
         // const athleteId = '7085811';         // ma
 
-        return getAllEffortsForAllSegments(accessToken, athleteId, segmentIds);
+        return getAllEffortsForAllSegments(accessToken, athleteId, segments);
 
       }).then((allEffortsForSegmentsInCurrentActivity) => {
 
@@ -246,21 +242,34 @@ export function getDetailedActivity(request: Request, response: Response): Promi
   }
 }
 
-function getAllEffortsForAllSegments(accessToken: any, athleteId: string, segmentIds: number[]): Promise<StravatronSegmentEffortsForSegment[]> {
+function getAllEffortsForAllSegments(accessToken: any, athleteId: string, segments: StravatronDetailedSegment[]): Promise<StravatronSegmentEffortsForSegment[]> {
 
   const allEffortsForSegmentsInCurrentActivity: StravatronSegmentEffortsForSegment[] = [];
 
   const getNextEffortsForSegment = (index: number): Promise<StravatronSegmentEffortsForSegment[]> => {
 
-    if (index >= segmentIds.length) {
+    if (index >= segments.length) {
       return Promise.resolve(allEffortsForSegmentsInCurrentActivity);
     }
 
-    const segmentId = segmentIds[index];
+    const segment: StravatronDetailedSegment = segments[index];
+
+    // see if all efforts for this segment have already been retrieved
+    if (!isNil(segment.allEffortsLoaded) && segment.allEffortsLoaded) {
+      // TEDTODO - need to get the segmentEfforts and push them to allEffortsForSegmentsInCurrentActivity
+      console.log('allEffortsLoaded for segment: ', segment.id);
+      return getNextEffortsForSegment(index + 1);
+    }
+
+    const segmentId = segment.id;
+
+    console.log('fetchAllEfforts for segment: ', segmentId);
 
     return fetchAllEfforts(accessToken, athleteId, segmentId)
       .then((segmentEffortsForSegment: StravatronSegmentEffortsForSegment) => {
         allEffortsForSegmentsInCurrentActivity.push(segmentEffortsForSegment);
+        return setSegmentEffortsLoaded(segmentId);
+      }).then(() => {
         return getNextEffortsForSegment(index + 1);
       });
   };
@@ -268,6 +277,16 @@ function getAllEffortsForAllSegments(accessToken: any, athleteId: string, segmen
   return getNextEffortsForSegment(0);
 }
 
+function setSegmentEffortsLoaded(segmentId: number): Promise<Document> {
+
+  const conditions = { id: segmentId };
+  const query = Segment.findOneAndUpdate(conditions, { allEffortsLoaded: true });
+  const promise: Promise<Document> = query.exec();
+  return promise
+    .then( (segmentDocument: Document) => {
+      return Promise.resolve(segmentDocument);
+    });
+}
 
 function getSegments(accessToken: any, segmentIds: number[]): Promise<StravatronDetailedSegment[]> {
 
@@ -468,6 +487,9 @@ function getDateOfLastFetchedActivityFromDb(): Promise<Date> {
 
 // https://mongoosejs.com/docs/api.html#model_Model.insertMany
 function addSegmentsToDb(detailedSegments: StravatronDetailedSegment[]): Promise<any> {
+  if (detailedSegments.length === 0) {
+    return Promise.resolve();
+  }
   return Segment.collection.insertMany(
     detailedSegments,
     {

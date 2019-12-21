@@ -36,6 +36,7 @@ export interface StravatronDetailedSegment {
   totalElevationGain: number;
   map: StravaNativePolylineMap;
   effortCount: number;
+  allEffortsLoaded: boolean;
 }
 
 export interface StravatronAchievement {

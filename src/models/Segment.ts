@@ -23,6 +23,7 @@ const SegmentSchema = new Schema(
       summary_polyline: { type: String },
     },
     effortCount: { type: Number, required: true },
+    allEffortsLoaded: { type: Boolean, default: false },
   },
 );
 
