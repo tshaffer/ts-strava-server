@@ -151,7 +151,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
         }
 
         return getSegmentIdsNotInDb(segmentIds);
-        
+
       }).then(() => {
 
         return getSegments(accessToken, segmentIds);
@@ -420,22 +420,22 @@ function getDateOfLastFetchedActivityFromDb(): Promise<Date> {
 }
 
 function getSegmentIdsNotInDb(allSegmentIds: number[]): Promise<number[]> {
-  const query = Segment.find({}).where('id').in(allSegmentIds);
+  const query = Segment.find({}).where('id').select('id').in(allSegmentIds);
   const promise: Promise<Document[]> = query.exec();
   // segmentsInDb is an array of something; not an array of id's.
   // need to extra docs from segmentsInDb, then iterate through to get indices, or perform shortcut.
-  return promise.then( (segmentsInDb: any) => {
+  return promise.then((segmentsInDb: any) => {
     // generate array of segmentIds that are in the database from query result
-    const segmentIdsInDb: number[] = segmentsInDb.map( (mongooseSegmentInDb: any) => {
+    const segmentIdsInDb: number[] = segmentsInDb.map((mongooseSegmentInDb: any) => {
       const segmentInDb: any = mongooseSegmentInDb.toObject();
       return segmentInDb.id;
     });
     // get segments not in db
-    const segmentsNotInDb: number[] = allSegmentIds.filter( (value, index, arr) => {
+    const segmentsNotInDb: number[] = allSegmentIds.filter((value, index, arr) => {
       return segmentIdsInDb.indexOf(value) < 0;
     });
     return Promise.resolve(segmentsNotInDb);
-  }).catch( (err: Error) => {
+  }).catch((err: Error) => {
     return Promise.reject(err);
   });
 }
