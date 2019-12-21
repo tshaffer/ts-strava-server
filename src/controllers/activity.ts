@@ -150,6 +150,10 @@ export function getDetailedActivity(request: Request, response: Response): Promi
           segmentIds.push(stravaSegmentEffort.segment.id);
         }
 
+        return getSegmentIdsNotInDb(segmentIds);
+        
+      }).then(() => {
+
         return getSegments(accessToken, segmentIds);
 
       }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
@@ -393,7 +397,7 @@ function getDateOfLastFetchedActivityFromDb(): Promise<Date> {
   const beginningOfTime = new Date(1970, 0, 0, 0, 0, 0, 0);
 
   const query = AppVariables.find({});
-  const promise: Promise<Array<import('mongoose').Document>> = query.exec();
+  const promise: Promise<Document[]> = query.exec();
 
   return promise.then((appVariablesDocs: any[]) => {
     if (isArray(appVariablesDocs) && appVariablesDocs.length > 0) {
@@ -412,6 +416,27 @@ function getDateOfLastFetchedActivityFromDb(): Promise<Date> {
   }).catch((err: Error) => {
     console.log('getDateOfLastFetchedActivity error: ' + err);
     return Promise.resolve(beginningOfTime);
+  });
+}
+
+function getSegmentIdsNotInDb(allSegmentIds: number[]): Promise<number[]> {
+  const query = Segment.find({}).where('id').in(allSegmentIds);
+  const promise: Promise<Document[]> = query.exec();
+  // segmentsInDb is an array of something; not an array of id's.
+  // need to extra docs from segmentsInDb, then iterate through to get indices, or perform shortcut.
+  return promise.then( (segmentsInDb: any) => {
+    // generate array of segmentIds that are in the database from query result
+    const segmentIdsInDb: number[] = segmentsInDb.map( (mongooseSegmentInDb: any) => {
+      const segmentInDb: any = mongooseSegmentInDb.toObject();
+      return segmentInDb.id;
+    });
+    // get segments not in db
+    const segmentsNotInDb: number[] = allSegmentIds.filter( (value, index, arr) => {
+      return segmentIdsInDb.indexOf(value) < 0;
+    });
+    return Promise.resolve(segmentsNotInDb);
+  }).catch( (err: Error) => {
+    return Promise.reject(err);
   });
 }
 
