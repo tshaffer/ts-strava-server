@@ -22,6 +22,11 @@ import ActivityStreams from '../models/ActivityStreams';
 import AppVariables from '../models/AppVariables';
 import { isArray } from 'util';
 
+interface DbSegmentData {
+  segmentIdsNotInDb: number[];
+  segmentsInDb: StravatronDetailedSegment[];
+}
+
 // summary activities
 export function getSummaryActivities(request: Request, response: Response) {
 
@@ -150,9 +155,12 @@ export function getDetailedActivity(request: Request, response: Response): Promi
           segmentIds.push(stravaSegmentEffort.segment.id);
         }
 
-        return getSegmentIdsNotInDb(segmentIds);
+        // get the segments that are in the database already and fetch the
+        // segments that are not in the database from strava.
 
-      }).then(() => {
+      //   return getDbSegmentData(segmentIds);
+
+      // }).then(() => {
 
         return getSegments(accessToken, segmentIds);
 
@@ -265,7 +273,48 @@ function getAllEffortsForAllSegments(accessToken: any, athleteId: string, segmen
   return getNextEffortsForSegment(0);
 }
 
+
 function getSegments(accessToken: any, segmentIds: number[]): Promise<StravatronDetailedSegment[]> {
+
+  let segmentsInDb: StravatronDetailedSegment[];
+
+  return getDbSegmentData(segmentIds)
+    .then((segmentData: any) => {
+      segmentsInDb = segmentData.segmentsInDb;
+      const segmentIdsNotInDb: number[] = segmentData.segmentIdsNotInDb;
+      return getSegmentsFromStrava(accessToken, segmentIdsNotInDb);
+    }).then((stravatronSegments: StravatronDetailedSegment[]) => {
+      // TEDTODO - add these segments to db
+      return Promise.resolve(segmentsInDb.concat(stravatronSegments));
+    });
+}
+
+function getDbSegmentData(allSegmentIds: number[]): Promise<DbSegmentData> {
+  // const query = Segment.find({}).where('id').select('id').in(allSegmentIds);
+  const query = Segment.find({}).where('id').in(allSegmentIds);
+  const promise: Promise<Document[]> = query.exec();
+  return promise.then((mongooseSegmentsInDb: any) => {
+    const segmentsInDb: StravatronDetailedSegment[] = mongooseSegmentsInDb.map((mongooseSegmentInDb: any) => {
+      return mongooseSegmentInDb.toObject();
+    });
+    const segmentIdsInDb: number[] = segmentsInDb.map((segmentInDb: any) => {
+      return segmentInDb.id;
+    });
+    const segmentIdsNotInDb: number[] = allSegmentIds.filter((value, index, arr) => {
+      return segmentIdsInDb.indexOf(value) < 0;
+    });
+    return Promise.resolve(
+      {
+        segmentsInDb,
+        segmentIdsNotInDb,
+      },
+    );
+  }).catch((err: Error) => {
+    return Promise.reject(err);
+  });
+}
+
+function getSegmentsFromStrava(accessToken: any, segmentIds: number[]): Promise<StravatronDetailedSegment[]> {
 
   const detailedSegments: StravatronDetailedSegment[] = [];
 
@@ -416,27 +465,6 @@ function getDateOfLastFetchedActivityFromDb(): Promise<Date> {
   }).catch((err: Error) => {
     console.log('getDateOfLastFetchedActivity error: ' + err);
     return Promise.resolve(beginningOfTime);
-  });
-}
-
-function getSegmentIdsNotInDb(allSegmentIds: number[]): Promise<number[]> {
-  const query = Segment.find({}).where('id').select('id').in(allSegmentIds);
-  const promise: Promise<Document[]> = query.exec();
-  // segmentsInDb is an array of something; not an array of id's.
-  // need to extra docs from segmentsInDb, then iterate through to get indices, or perform shortcut.
-  return promise.then((segmentsInDb: any) => {
-    // generate array of segmentIds that are in the database from query result
-    const segmentIdsInDb: number[] = segmentsInDb.map((mongooseSegmentInDb: any) => {
-      const segmentInDb: any = mongooseSegmentInDb.toObject();
-      return segmentInDb.id;
-    });
-    // get segments not in db
-    const segmentsNotInDb: number[] = allSegmentIds.filter((value, index, arr) => {
-      return segmentIdsInDb.indexOf(value) < 0;
-    });
-    return Promise.resolve(segmentsNotInDb);
-  }).catch((err: Error) => {
-    return Promise.reject(err);
   });
 }
 
