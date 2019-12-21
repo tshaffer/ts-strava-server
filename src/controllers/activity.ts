@@ -157,11 +157,6 @@ export function getDetailedActivity(request: Request, response: Response): Promi
 
         // get the segments that are in the database already and fetch the
         // segments that are not in the database from strava.
-
-      //   return getDbSegmentData(segmentIds);
-
-      // }).then(() => {
-
         return getSegments(accessToken, segmentIds);
 
       }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
@@ -169,9 +164,9 @@ export function getDetailedActivity(request: Request, response: Response): Promi
         segments = detailedSegmentsRet;
 
         // add segments to db
-        return addSegmentsToDb(segments);
+        // return addSegmentsToDb(segments);
 
-      }).then((segmentDocsAdded: any[]) => {
+      // }).then((segmentDocsAdded: any[]) => {
 
         const athleteId = '2843574';            // pa
         // const athleteId = '7085811';         // ma
@@ -277,14 +272,17 @@ function getAllEffortsForAllSegments(accessToken: any, athleteId: string, segmen
 function getSegments(accessToken: any, segmentIds: number[]): Promise<StravatronDetailedSegment[]> {
 
   let segmentsInDb: StravatronDetailedSegment[];
+  let stravatronSegments: StravatronDetailedSegment[];
 
   return getDbSegmentData(segmentIds)
     .then((segmentData: any) => {
       segmentsInDb = segmentData.segmentsInDb;
       const segmentIdsNotInDb: number[] = segmentData.segmentIdsNotInDb;
       return getSegmentsFromStrava(accessToken, segmentIdsNotInDb);
-    }).then((stravatronSegments: StravatronDetailedSegment[]) => {
-      // TEDTODO - add these segments to db
+    }).then((stravatronSegmentsRet: StravatronDetailedSegment[]) => {
+      stravatronSegments = stravatronSegmentsRet;
+      return addSegmentsToDb(stravatronSegments);
+    }).then(() => {
       return Promise.resolve(segmentsInDb.concat(stravatronSegments));
     });
 }
