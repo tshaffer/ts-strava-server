@@ -2,7 +2,7 @@ import express from 'express';
 const activitiesRouter = express.Router();
 
 import { 
-  getActivities,
+  getSummaryActivities,
   getDetailedActivity,
   createActivity,
   createSummaryActivity,
@@ -12,7 +12,7 @@ import {
   getStreams,
  } from '../controllers';
 
-activitiesRouter.get('/activities', getActivities);
+activitiesRouter.get('/activities', getSummaryActivities);
 activitiesRouter.get('/activity/:id', getDetailedActivity);
 
 // test endpoints

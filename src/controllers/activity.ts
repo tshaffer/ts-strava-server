@@ -22,21 +22,8 @@ import ActivityStreams from '../models/ActivityStreams';
 import AppVariables from '../models/AppVariables';
 import { isArray } from 'util';
 
-function getSecondsSinceLastFetch(): Promise<any> {
-
-  return getDateOfLastFetchedActivityFromDb().then((dateOfLastFetchedActivity: Date) => {
-    console.log('Date of last fetched activity');
-    console.log(dateOfLastFetchedActivity);
-
-    let secondsSinceLastFetch = Math.floor(dateOfLastFetchedActivity.getTime() / 1000);
-    if (secondsSinceLastFetch < 0) {
-      secondsSinceLastFetch = 0;
-    }
-    return Promise.resolve(secondsSinceLastFetch);
-  });
-}
-
-export function getActivities(request: Request, response: Response) {
+// summary activities
+export function getSummaryActivities(request: Request, response: Response) {
 
   console.log('getActivities handler:');
 
@@ -55,17 +42,6 @@ export function getActivities(request: Request, response: Response) {
         });
       });
     });
-}
-
-function getDateOfLastFetchedActivity(summaryActivities: StravatronSummaryActivity[]): Date {
-  let dateOfLastFetchedActivity = new Date(1970, 0, 0, 0, 0, 0, 0);
-  for (const summaryActivity of summaryActivities) {
-    const activityDate = new Date(summaryActivity.startDateLocal);
-    if (activityDate.getTime() > dateOfLastFetchedActivity.getTime()) {
-      dateOfLastFetchedActivity = activityDate;
-    }
-  }
-  return dateOfLastFetchedActivity;
 }
 
 function addSummaryActivitiesToDb(summaryActivities: StravatronSummaryActivity[]): Promise<void> {
@@ -87,8 +63,32 @@ function addSummaryActivitiesToDb(summaryActivities: StravatronSummaryActivity[]
   return addNextSummaryActivity(0);
 }
 
-// https://stackoverflow.com/questions/39153460/whats-the-difference-between-findoneandupdate-and-findoneandreplace
+function getSecondsSinceLastFetch(): Promise<any> {
 
+  return getDateOfLastFetchedActivityFromDb().then((dateOfLastFetchedActivity: Date) => {
+    console.log('Date of last fetched activity');
+    console.log(dateOfLastFetchedActivity);
+
+    let secondsSinceLastFetch = Math.floor(dateOfLastFetchedActivity.getTime() / 1000);
+    if (secondsSinceLastFetch < 0) {
+      secondsSinceLastFetch = 0;
+    }
+    return Promise.resolve(secondsSinceLastFetch);
+  });
+}
+
+function getDateOfLastFetchedActivity(summaryActivities: StravatronSummaryActivity[]): Date {
+  let dateOfLastFetchedActivity = new Date(1970, 0, 0, 0, 0, 0, 0);
+  for (const summaryActivity of summaryActivities) {
+    const activityDate = new Date(summaryActivity.startDateLocal);
+    if (activityDate.getTime() > dateOfLastFetchedActivity.getTime()) {
+      dateOfLastFetchedActivity = activityDate;
+    }
+  }
+  return dateOfLastFetchedActivity;
+}
+
+// https://stackoverflow.com/questions/39153460/whats-the-difference-between-findoneandupdate-and-findoneandreplace
 function setDateOfLastFetchedActivityInDb(dateOfLastFetchedActivity: Date): Promise<void> {
 
   const appVariables: any = {
@@ -110,6 +110,133 @@ function setDateOfLastFetchedActivityInDb(dateOfLastFetchedActivity: Date): Prom
       });
     }
   });
+}
+
+function isActivityInDb(activityId: string) {
+  // TEDTODO
+  return false;
+}
+// detailed activity
+export function getDetailedActivity(request: Request, response: Response): Promise<any> {
+
+  const activityId: string = request.params.id;
+
+  // check to see if this activity already exists in the db as a detailed activity
+  if (isActivityInDb(activityId)) {
+    // TEDTODO
+  }
+  else {
+
+    let accessToken: any;
+    let detailedActivity: StravatronDetailedActivity;
+    let detailedActivityAttributes: StravatronDetailedActivityAttributes;
+    const segmentIds: number[] = [];
+    let segments: StravatronDetailedSegment[];
+    let allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
+
+    return retrieveAccessToken()
+
+      .then((accessTokenRet: any) => {
+
+        accessToken = accessTokenRet;
+        return fetchDetailedActivity(accessToken, activityId);
+
+      }).then((nativeDetailedActivity: StravaNativeDetailedActivity) => {
+
+        detailedActivity = transformStravaDetailedActivity(nativeDetailedActivity);
+
+        // retrieve all segmentEfforts and segments from the detailed activity
+        for (const stravaSegmentEffort of nativeDetailedActivity.segment_efforts) {
+          segmentIds.push(stravaSegmentEffort.segment.id);
+        }
+
+        return getSegments(accessToken, segmentIds);
+
+      }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
+
+        segments = detailedSegmentsRet;
+
+        // add segments to db
+        return addSegmentsToDb(segments);
+
+      }).then((segmentDocsAdded: any[]) => {
+
+        const athleteId = '2843574';            // pa
+        // const athleteId = '7085811';         // ma
+
+        return getAllEffortsForAllSegments(accessToken, athleteId, segmentIds);
+
+      }).then((allEffortsForSegmentsInCurrentActivity) => {
+
+        allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
+        // add segment efforts to db
+
+        return fetchStreams(accessToken, activityId);
+
+      }).then((streams: StravatronStream[]) => {
+
+        const stravatronStreamData: StravatronStreams = getStreamData(streams);
+
+        // add streams to db
+
+        // TEDTODO - put elsewhere
+        detailedActivityAttributes =
+        {
+          achievementCount: detailedActivity.achievementCount,
+          athleteId: detailedActivity.athleteId,
+          averageSpeed: detailedActivity.averageSpeed,
+          averageTemp: detailedActivity.averageTemp,
+          averageWatts: detailedActivity.averageWatts,
+          deviceWatts: detailedActivity.deviceWatts,
+          distance: detailedActivity.distance,
+          elapsedTime: detailedActivity.elapsedTime,
+          elevHigh: detailedActivity.elevHigh,
+          elevLow: detailedActivity.elevLow,
+          endLatlng: detailedActivity.endLatlng,
+          id: detailedActivity.id,
+          kilojoules: detailedActivity.kilojoules,
+          city: detailedActivity.city,
+          country: detailedActivity.country,
+          state: detailedActivity.state,
+          map: detailedActivity.map,
+          maxSpeed: detailedActivity.maxSpeed,
+          movingTime: detailedActivity.movingTime,
+          name: detailedActivity.name,
+          prCount: detailedActivity.prCount,
+          resourceState: detailedActivity.resourceState,
+          startDate: detailedActivity.startDate,
+          startDateLocal: detailedActivity.startDateLocal,
+          startLatitude: detailedActivity.startLatitude,
+          startLatlng: detailedActivity.startLatlng,
+          startLongitude: detailedActivity.startLongitude,
+          timezone: detailedActivity.timezone,
+          totalElevationGain: detailedActivity.totalElevationGain,
+          weightedAverageWatts: detailedActivity.weightedAverageWatts,
+          description: detailedActivity.description,
+          calories: detailedActivity.calories,
+          averageCadence: detailedActivity.averageCadence,
+          averageHeartrate: detailedActivity.averageHeartrate,
+          deviceName: detailedActivity.deviceName,
+          hasHeartrate: detailedActivity.hasHeartrate,
+          maxHeartrate: detailedActivity.maxHeartrate,
+          maxWatts: detailedActivity.maxWatts,
+          type: detailedActivity.type,
+          utcOffset: detailedActivity.utcOffset,
+          bestEfforts: detailedActivity.bestEfforts,
+        };
+
+        // merge this detailed activity data with the existing summary activity data
+        return addActivityToDb(detailedActivityAttributes).then(() => {
+          const detailedActivityData: StravatronDetailedActivityData = {
+            detailedActivityAttributes,
+            streams: stravatronStreamData,
+            segments,
+            allSegmentEffortsForSegmentsInActivity,
+          };
+          response.json(detailedActivityData);
+        });
+      });
+  }
 }
 
 function getAllEffortsForAllSegments(accessToken: any, athleteId: string, segmentIds: number[]): Promise<StravatronSegmentEffortsForSegment[]> {
@@ -196,109 +323,6 @@ function getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity: Str
     }
   }
   return segmentEffortsInActivity;
-}
-
-export function getDetailedActivity(request: Request, response: Response): Promise<any> {
-
-  const activityId: string = request.params.id;
-
-  let accessToken: any;
-  let detailedActivity: StravatronDetailedActivity;
-  let detailedActivityAttributes: StravatronDetailedActivityAttributes;
-  const segmentIds: number[] = [];
-  let segments: StravatronDetailedSegment[];
-  let allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
-
-  return retrieveAccessToken()
-
-    .then((accessTokenRet: any) => {
-
-      accessToken = accessTokenRet;
-      return fetchDetailedActivity(accessToken, activityId);
-
-    }).then((nativeDetailedActivity: StravaNativeDetailedActivity) => {
-
-      detailedActivity = transformStravaDetailedActivity(nativeDetailedActivity);
-
-      // retrieve all segmentEfforts and segments from the detailed activity
-      for (const stravaSegmentEffort of nativeDetailedActivity.segment_efforts) {
-        segmentIds.push(stravaSegmentEffort.segment.id);
-      }
-
-      return getSegments(accessToken, segmentIds);
-
-    }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
-
-      segments = detailedSegmentsRet;
-
-      const athleteId = '2843574';            // pa
-      // const athleteId = '7085811';         // ma
-
-      return getAllEffortsForAllSegments(accessToken, athleteId, segmentIds);
-
-    }).then((allEffortsForSegmentsInCurrentActivity) => {
-      allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
-      return fetchStreams(accessToken, activityId);
-    }).then((streams: StravatronStream[]) => {
-
-      const stravatronStreamData: StravatronStreams = getStreamData(streams);
-
-      // TEDTODO - put elsewhere
-      detailedActivityAttributes =
-      {
-        achievementCount: detailedActivity.achievementCount,
-        athleteId: detailedActivity.athleteId,
-        averageSpeed: detailedActivity.averageSpeed,
-        averageTemp: detailedActivity.averageTemp,
-        averageWatts: detailedActivity.averageWatts,
-        deviceWatts: detailedActivity.deviceWatts,
-        distance: detailedActivity.distance,
-        elapsedTime: detailedActivity.elapsedTime,
-        elevHigh: detailedActivity.elevHigh,
-        elevLow: detailedActivity.elevLow,
-        endLatlng: detailedActivity.endLatlng,
-        id: detailedActivity.id,
-        kilojoules: detailedActivity.kilojoules,
-        city: detailedActivity.city,
-        country: detailedActivity.country,
-        state: detailedActivity.state,
-        map: detailedActivity.map,
-        maxSpeed: detailedActivity.maxSpeed,
-        movingTime: detailedActivity.movingTime,
-        name: detailedActivity.name,
-        prCount: detailedActivity.prCount,
-        resourceState: detailedActivity.resourceState,
-        startDate: detailedActivity.startDate,
-        startDateLocal: detailedActivity.startDateLocal,
-        startLatitude: detailedActivity.startLatitude,
-        startLatlng: detailedActivity.startLatlng,
-        startLongitude: detailedActivity.startLongitude,
-        timezone: detailedActivity.timezone,
-        totalElevationGain: detailedActivity.totalElevationGain,
-        weightedAverageWatts: detailedActivity.weightedAverageWatts,
-        description: detailedActivity.description,
-        calories: detailedActivity.calories,
-        averageCadence: detailedActivity.averageCadence,
-        averageHeartrate: detailedActivity.averageHeartrate,
-        deviceName: detailedActivity.deviceName,
-        hasHeartrate: detailedActivity.hasHeartrate,
-        maxHeartrate: detailedActivity.maxHeartrate,
-        maxWatts: detailedActivity.maxWatts,
-        type: detailedActivity.type,
-        utcOffset: detailedActivity.utcOffset,
-        bestEfforts: detailedActivity.bestEfforts,
-      };
-
-      return addActivityToDb(detailedActivityAttributes).then(() => {
-        const detailedActivityData: StravatronDetailedActivityData = {
-          detailedActivityAttributes,
-          streams: stravatronStreamData,
-          segments,
-          allSegmentEffortsForSegmentsInActivity,
-        };
-        response.json(detailedActivityData);
-      });
-    });
 }
 
 function getStreamData(stravaStreams: StravatronStream[]): StravatronStreams {
@@ -389,6 +413,16 @@ function getDateOfLastFetchedActivityFromDb(): Promise<Date> {
     console.log('getDateOfLastFetchedActivity error: ' + err);
     return Promise.resolve(beginningOfTime);
   });
+}
+
+// https://mongoosejs.com/docs/api.html#model_Model.insertMany
+function addSegmentsToDb(detailedSegments: StravatronDetailedSegment[]): Promise<any> {
+  return Segment.collection.insertMany(
+    detailedSegments,
+    {
+      ordered: false,
+    },
+  );
 }
 
 // TEST only
