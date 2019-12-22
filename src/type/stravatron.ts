@@ -136,6 +136,7 @@ export interface StravatronDetailedActivity extends StravatronSummaryActivity {
 }
 
 export interface StravatronDetailedActivityAttributes {
+  id: number;
   achievementCount: number;
   athleteId: number;
   averageSpeed: number;
@@ -147,7 +148,6 @@ export interface StravatronDetailedActivityAttributes {
   elevHigh?: number;
   elevLow?: number;
   endLatlng: StravaNativeLatLng;
-  id: number;
   kilojoules?: number;
   city?: string;
   country: string;

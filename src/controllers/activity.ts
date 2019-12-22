@@ -232,7 +232,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
             };
 
             // merge this detailed activity data with the existing summary activity data
-            return addActivityToDb(detailedActivityAttributes).then(() => {
+            return addActivityDetailsToDb(detailedActivityAttributes).then(() => {
               const detailedActivityData: StravatronDetailedActivityData = {
                 detailedActivityAttributes,
                 streams: stravatronStreamData,
@@ -298,7 +298,6 @@ function getAllEffortsForAllSegments(accessToken: any, athleteId: string, detail
 }
 
 function setSegmentEffortsLoaded(segmentId: number): Promise<Document> {
-
   const conditions = { id: segmentId };
   const query = Segment.findOneAndUpdate(conditions, { allEffortsLoaded: true });
   const promise: Promise<Document> = query.exec();
@@ -497,11 +496,27 @@ function getStreamData(activityId: number, stravaStreams: StravatronStream[]): S
   return streamData;
 }
 
-function addActivityToDb(detailedActivityAttributes: any) {
-  return Activity.create(detailedActivityAttributes).then((activity: any) => {
-    console.log('activity added to database: ' + activity);
-    Promise.resolve();
-  });
+function addActivityDetailsToDb(detailedActivityAttributes: StravatronDetailedActivityAttributes): Promise<Document> {
+ const conditions = { id: detailedActivityAttributes.id };
+ const detailedAttributes: any = {
+  detailsLoaded: true,
+  description: detailedActivityAttributes.description,
+  calories: detailedActivityAttributes.calories,
+  averageCadence: detailedActivityAttributes.averageCadence,
+  averageHeartrate: detailedActivityAttributes.averageHeartrate,
+  deviceName: detailedActivityAttributes.deviceName,
+  hasHeartrate: detailedActivityAttributes.hasHeartrate,
+  maxHeartrate: detailedActivityAttributes.maxHeartrate,
+  maxWatts: detailedActivityAttributes.maxWatts,
+  type: detailedActivityAttributes.type,
+  utcOffset: detailedActivityAttributes.utcOffset,
+ };
+ const query = Activity.findOneAndUpdate(conditions, detailedAttributes);
+ const promise: Promise<Document> = query.exec();
+ return promise
+   .then((detailedActivity: Document) => {
+     return Promise.resolve(detailedActivity);
+   });
 }
 
 function getDateOfLastFetchedActivityFromDb(): Promise<Date> {

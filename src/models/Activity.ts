@@ -4,6 +4,8 @@ const Schema = mongoose.Schema;
 
 const ActivitySchema = new Schema(
   {
+    id: { type: Number, required: true, unique: true },
+    detailsLoaded: { type: Boolean, default: false },
     achievementCount: { type: Number, required: true },
     athleteId: { type: Number, required: true },
     averageSpeed: { type: Number, required: true },
@@ -15,7 +17,6 @@ const ActivitySchema = new Schema(
     elevHigh: { type: Number },
     elevLow: { type: Number },
     endLatlng: { type: [Number] },
-    id: { type: Number, required: true, unique: true },
     kilojoules: { type: Number },
     city: { type: String },
     country: { type: String, required: true },
