@@ -122,6 +122,7 @@ function isActivityInDb(activityId: string) {
   // TEDTODO
   return false;
 }
+
 // detailed activity
 export function getDetailedActivity(request: Request, response: Response): Promise<any> {
 
@@ -167,7 +168,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
         const athleteId = '2843574';            // pa
         // const athleteId = '7085811';         // ma
 
-        return getAllEffortsForAllSegments(accessToken, athleteId, segments);
+        return getAllEffortsForAllSegments(accessToken, athleteId, detailedActivity, segments);
 
       }).then((allEffortsForSegmentsInCurrentActivity) => {
 
@@ -241,9 +242,10 @@ export function getDetailedActivity(request: Request, response: Response): Promi
   }
 }
 
-function getAllEffortsForAllSegments(accessToken: any, athleteId: string, segments: StravatronDetailedSegment[]): Promise<StravatronSegmentEffortsForSegment[]> {
+function getAllEffortsForAllSegments(accessToken: any, athleteId: string, detailedActivity: StravatronDetailedActivity, segments: StravatronDetailedSegment[]): Promise<StravatronSegmentEffortsForSegment[]> {
 
   const allEffortsForSegmentsInCurrentActivity: StravatronSegmentEffortsForSegment[] = [];
+  let segmentEffortsForSegment: StravatronSegmentEffortsForSegment;
 
   const getNextEffortsForSegment = (index: number): Promise<StravatronSegmentEffortsForSegment[]> => {
 
@@ -253,11 +255,20 @@ function getAllEffortsForAllSegments(accessToken: any, athleteId: string, segmen
 
     const segment: StravatronDetailedSegment = segments[index];
 
-    // see if all efforts for this segment have already been retrieved
+    // see if all prior efforts for this segment have already been retrieved
+    // THIS ONLY WORKS IF THIS CODE IS NOT CALLED WHEN THE ACTIVITY HAS ALREADY BEEN LOADED / VIEWED
     if (!isNil(segment.allEffortsLoaded) && segment.allEffortsLoaded) {
       console.log('allEffortsLoaded for segment: ', segment.id);
       return getSegmentEffortsForSegmentFromDb(segment.id)
-        .then((segmentEffortsForSegment: StravatronSegmentEffortsForSegment) => {
+        .then((segmentEffortsForSegmentRet: StravatronSegmentEffortsForSegment) => {
+          segmentEffortsForSegment = segmentEffortsForSegmentRet;
+          return Promise.resolve(null);
+          // TEDTODO - think through this some more - current algorithm isn't solid.
+          // return addActivitySegmentEffortToDb(detailedActivity, segment.id);
+        }).then((currentSegmentEffort: StravatronSegmentEffort) => {
+          if (!isNil(currentSegmentEffort)) {
+            segmentEffortsForSegment.push(currentSegmentEffort);
+          }
           allEffortsForSegmentsInCurrentActivity.push(segmentEffortsForSegment);
           return getNextEffortsForSegment(index + 1);
         });
@@ -268,9 +279,9 @@ function getAllEffortsForAllSegments(accessToken: any, athleteId: string, segmen
     console.log('fetchAllEfforts for segment: ', segmentId);
 
     return fetchAllEfforts(accessToken, athleteId, segmentId)
-      .then((segmentEffortsForSegment: StravatronSegmentEffortsForSegment) => {
-        allEffortsForSegmentsInCurrentActivity.push(segmentEffortsForSegment);
-        return addSegmentEffortsToDb(segmentEffortsForSegment);
+      .then((segmentEffortsForSegmentRet: StravatronSegmentEffortsForSegment) => {
+        allEffortsForSegmentsInCurrentActivity.push(segmentEffortsForSegmentRet);
+        return addSegmentEffortsToDb(segmentEffortsForSegmentRet);
       }).then(() => {
         return setSegmentEffortsLoaded(segmentId);
       }).then(() => {
@@ -345,6 +356,19 @@ function getSegmentEffortsForSegmentFromDb(segmentId: number): Promise<Stravatro
       });
       return Promise.resolve(segmentEfforts);
     });
+}
+
+// get segment effort for the current activity and add it to the db
+function addActivitySegmentEffortToDb(detailedActivity: StravatronDetailedActivity, segmentId: number): Promise<StravatronSegmentEffort> {
+  for (const segmentEffort of detailedActivity.segmentEfforts) {
+    if (segmentEffort.segmentId === segmentId) {
+      return addSegmentEffortsToDb([segmentEffort])
+        .then(() => {
+          return Promise.resolve(segmentEffort);
+        });
+    }
+  }
+  return Promise.reject();
 }
 
 function getSegmentsFromStrava(accessToken: any, segmentIds: number[]): Promise<StravatronDetailedSegment[]> {
