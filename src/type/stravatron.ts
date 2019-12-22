@@ -8,7 +8,7 @@ export type StravatronSegmentEffortsForSegment = StravatronSegmentEffort[];
 export interface StravatronDetailedActivityData {
   detailedActivityAttributes: StravatronDetailedActivityAttributes;
   allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
-  streams: StravatronStreams;
+  streams: StravatronActivityStreams;
   segments: StravatronDetailedSegment[];
 }
 
@@ -73,7 +73,8 @@ export interface StravatronStream {
   type: string;
 }
 
-export interface StravatronStreams {
+export interface StravatronActivityStreams {
+  activityId: number;
   time: any[];
   location: any[];
   elevation: any[];

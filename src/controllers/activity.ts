@@ -8,7 +8,7 @@ import {
   StravatronDetailedActivity,
   StravatronSegmentEffort,
   StravatronDetailedActivityAttributes,
-  StravatronStreams,
+  StravatronActivityStreams,
   StravatronStream,
   StravatronDetailedSegment,
   StravatronSegmentEffortsForSegment,
@@ -178,66 +178,71 @@ export function getDetailedActivity(request: Request, response: Response): Promi
 
       }).then((streams: StravatronStream[]) => {
 
-        const stravatronStreamData: StravatronStreams = getStreamData(streams);
+        const stravatronStreamData: StravatronActivityStreams = getStreamData(detailedActivity.id, streams);
 
         // add streams to db
+        // TEDTODO - ignore promise return - is this correct?
+        addStreamsToDb(stravatronStreamData)
+          .then(() => {
+            
+            // TEDTODO - put elsewhere
+            detailedActivityAttributes =
+            {
+              achievementCount: detailedActivity.achievementCount,
+              athleteId: detailedActivity.athleteId,
+              averageSpeed: detailedActivity.averageSpeed,
+              averageTemp: detailedActivity.averageTemp,
+              averageWatts: detailedActivity.averageWatts,
+              deviceWatts: detailedActivity.deviceWatts,
+              distance: detailedActivity.distance,
+              elapsedTime: detailedActivity.elapsedTime,
+              elevHigh: detailedActivity.elevHigh,
+              elevLow: detailedActivity.elevLow,
+              endLatlng: detailedActivity.endLatlng,
+              id: detailedActivity.id,
+              kilojoules: detailedActivity.kilojoules,
+              city: detailedActivity.city,
+              country: detailedActivity.country,
+              state: detailedActivity.state,
+              map: detailedActivity.map,
+              maxSpeed: detailedActivity.maxSpeed,
+              movingTime: detailedActivity.movingTime,
+              name: detailedActivity.name,
+              prCount: detailedActivity.prCount,
+              resourceState: detailedActivity.resourceState,
+              startDate: detailedActivity.startDate,
+              startDateLocal: detailedActivity.startDateLocal,
+              startLatitude: detailedActivity.startLatitude,
+              startLatlng: detailedActivity.startLatlng,
+              startLongitude: detailedActivity.startLongitude,
+              timezone: detailedActivity.timezone,
+              totalElevationGain: detailedActivity.totalElevationGain,
+              weightedAverageWatts: detailedActivity.weightedAverageWatts,
+              description: detailedActivity.description,
+              calories: detailedActivity.calories,
+              averageCadence: detailedActivity.averageCadence,
+              averageHeartrate: detailedActivity.averageHeartrate,
+              deviceName: detailedActivity.deviceName,
+              hasHeartrate: detailedActivity.hasHeartrate,
+              maxHeartrate: detailedActivity.maxHeartrate,
+              maxWatts: detailedActivity.maxWatts,
+              type: detailedActivity.type,
+              utcOffset: detailedActivity.utcOffset,
+              bestEfforts: detailedActivity.bestEfforts,
+            };
 
-        // TEDTODO - put elsewhere
-        detailedActivityAttributes =
-        {
-          achievementCount: detailedActivity.achievementCount,
-          athleteId: detailedActivity.athleteId,
-          averageSpeed: detailedActivity.averageSpeed,
-          averageTemp: detailedActivity.averageTemp,
-          averageWatts: detailedActivity.averageWatts,
-          deviceWatts: detailedActivity.deviceWatts,
-          distance: detailedActivity.distance,
-          elapsedTime: detailedActivity.elapsedTime,
-          elevHigh: detailedActivity.elevHigh,
-          elevLow: detailedActivity.elevLow,
-          endLatlng: detailedActivity.endLatlng,
-          id: detailedActivity.id,
-          kilojoules: detailedActivity.kilojoules,
-          city: detailedActivity.city,
-          country: detailedActivity.country,
-          state: detailedActivity.state,
-          map: detailedActivity.map,
-          maxSpeed: detailedActivity.maxSpeed,
-          movingTime: detailedActivity.movingTime,
-          name: detailedActivity.name,
-          prCount: detailedActivity.prCount,
-          resourceState: detailedActivity.resourceState,
-          startDate: detailedActivity.startDate,
-          startDateLocal: detailedActivity.startDateLocal,
-          startLatitude: detailedActivity.startLatitude,
-          startLatlng: detailedActivity.startLatlng,
-          startLongitude: detailedActivity.startLongitude,
-          timezone: detailedActivity.timezone,
-          totalElevationGain: detailedActivity.totalElevationGain,
-          weightedAverageWatts: detailedActivity.weightedAverageWatts,
-          description: detailedActivity.description,
-          calories: detailedActivity.calories,
-          averageCadence: detailedActivity.averageCadence,
-          averageHeartrate: detailedActivity.averageHeartrate,
-          deviceName: detailedActivity.deviceName,
-          hasHeartrate: detailedActivity.hasHeartrate,
-          maxHeartrate: detailedActivity.maxHeartrate,
-          maxWatts: detailedActivity.maxWatts,
-          type: detailedActivity.type,
-          utcOffset: detailedActivity.utcOffset,
-          bestEfforts: detailedActivity.bestEfforts,
-        };
+            // merge this detailed activity data with the existing summary activity data
+            return addActivityToDb(detailedActivityAttributes).then(() => {
+              const detailedActivityData: StravatronDetailedActivityData = {
+                detailedActivityAttributes,
+                streams: stravatronStreamData,
+                segments,
+                allSegmentEffortsForSegmentsInActivity,
+              };
+              response.json(detailedActivityData);
+            });
+          });
 
-        // merge this detailed activity data with the existing summary activity data
-        return addActivityToDb(detailedActivityAttributes).then(() => {
-          const detailedActivityData: StravatronDetailedActivityData = {
-            detailedActivityAttributes,
-            streams: stravatronStreamData,
-            segments,
-            allSegmentEffortsForSegmentsInActivity,
-          };
-          response.json(detailedActivityData);
-        });
       });
   }
 }
@@ -435,7 +440,7 @@ function getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity: Str
   return segmentEffortsInActivity;
 }
 
-function getStreamData(stravaStreams: StravatronStream[]): StravatronStreams {
+function getStreamData(activityId: number, stravaStreams: StravatronStream[]): StravatronActivityStreams {
 
   let timeData: any[];
   let locationData: any[];
@@ -476,8 +481,9 @@ function getStreamData(stravaStreams: StravatronStream[]): StravatronStreams {
     }
   }
 
-  const streamData: StravatronStreams =
+  const streamData: StravatronActivityStreams =
   {
+    activityId,
     time: timeData,
     location: locationData,
     elevation: elevationData,
@@ -550,6 +556,10 @@ function addSegmentEffortsToDb(segmentEfforts: StravatronSegmentEffort[]): Promi
   );
 }
 
+function addStreamsToDb(activityStreams: StravatronActivityStreams): Promise<Document> {
+  return ActivityStreams.create(activityStreams);
+}
+
 // TEST only
 export function createActivity(request: Request, response: Response, next: any) {
   console.log('createActivity');
@@ -612,7 +622,7 @@ export function getStreams(request: Request, response: Response): Promise<any> {
 
     }).then((streams: StravatronStream[]) => {
 
-      const stravatronStreamData: StravatronStreams = getStreamData(streams);
+      const stravatronStreamData: StravatronActivityStreams = getStreamData(Number(activityId), streams);
       console.log(stravatronStreamData);
 
       return response.status(201).json({
