@@ -135,25 +135,35 @@ export interface StravatronDetailedActivity extends StravatronSummaryActivity {
   bestEfforts?: any; // DetailedSegmentEffort or DetailedSegmentEffort[] ??
 }
 
+// detailsLoaded?
 export interface StravatronDetailedActivityAttributes {
-  id: number;
   achievementCount: number;
   athleteId: number;
+  averageCadence: number;
+  averageHeartrate: number;
   averageSpeed: number;
   averageTemp?: number;
   averageWatts?: number;
+  bestEfforts?: any; // DetailedSegmentEffort or DetailedSegmentEffort[] ??
+  calories: number;
+  city?: string;
+  country: string;
+  description: string;
+  detailsLoaded: boolean;
+  deviceName: string;
   deviceWatts?: boolean;
   distance: number;
   elapsedTime: number;
   elevHigh?: number;
   elevLow?: number;
   endLatlng: StravaNativeLatLng;
+  hasHeartrate: boolean;
+  id: number;
   kilojoules?: number;
-  city?: string;
-  country: string;
-  state?: string;
   map: StravaNativePolylineMap; // does not include polyline
+  maxHeartrate: number;
   maxSpeed: number;
+  maxWatts: number;
   movingTime: number;
   name: string;
   prCount: number;
@@ -163,20 +173,10 @@ export interface StravatronDetailedActivityAttributes {
   startLatitude: number;
   startLatlng: StravaNativeLatLng;
   startLongitude: number;
+  state?: string;
   timezone: string;
   totalElevationGain: number;
   weightedAverageWatts?: number;
-  description: string;
-  calories: number;
-  averageCadence: number;
-  averageHeartrate: number;
-  deviceName: string;
-  hasHeartrate: boolean;
-  maxHeartrate: number;
-  maxWatts: number;
   type: string;
   utcOffset: number;
-  bestEfforts?: any; // DetailedSegmentEffort or DetailedSegmentEffort[] ??
 }
-
-  

@@ -118,9 +118,47 @@ function setDateOfLastFetchedActivityInDb(dateOfLastFetchedActivity: Date): Prom
   });
 }
 
-function isActivityInDb(activityId: string) {
-  // TEDTODO
-  return false;
+function getActivityAttributes(activityId: number): Promise<StravatronDetailedActivityAttributes> {
+  const query = Activity.find({ id: activityId });
+  const promise: Promise<Document[]> = query.exec();
+  return promise.then((activityDocs: Document[]) => {
+    if (isArray(activityDocs) && activityDocs.length === 1) {
+      const activityDoc: Document = activityDocs[0];
+      const activityAttributes: StravatronDetailedActivityAttributes = activityDoc.toObject();
+      return Promise.resolve(activityAttributes);
+    }
+    return Promise.resolve(null);
+  });
+}
+
+function getActivitySegmentEffortsFromDb(activityId: number): Promise<StravatronSegmentEffort[]> {
+  const query = SegmentEffort.find({ activityId });
+  const promise: Promise<Document[]> = query.exec();
+  return promise.then((segmentEffortDocs: Document[]) => {
+    if (isArray(segmentEffortDocs)) {
+      const segmentEfforts: StravatronSegmentEffort[] = segmentEffortDocs.map((segmentEffortDoc: Document) => {
+        return segmentEffortDoc.toObject();
+      });
+      return Promise.resolve(segmentEfforts);
+    }
+    return Promise.reject();
+  });
+}
+
+function getSegmentsFromDb(segmentIds: number[]): Promise<StravatronDetailedSegment[]> {
+  const query = Segment.find({ id: {$in: segmentIds}})
+  const promise: Promise<Document[]> = query.exec();
+  return promise.then((segmentDocs: Document[]) => {
+    if (isArray(segmentDocs)) {
+      const segments: StravatronDetailedSegment[] = segmentDocs.map((segmentDoc: Document) => {
+        return segmentDoc.toObject();
+      });
+      return Promise.resolve(segments);
+    }
+    return Promise.resolve([]);
+  });
+
+  return Promise.resolve(null);
 }
 
 // detailed activity
@@ -129,122 +167,143 @@ export function getDetailedActivity(request: Request, response: Response): Promi
   const activityId: string = request.params.id;
 
   // check to see if this activity already exists in the db as a detailed activity
-  if (isActivityInDb(activityId)) {
-    // TEDTODO
-  }
-  else {
-
-    let accessToken: any;
-    let detailedActivity: StravatronDetailedActivity;
-    let detailedActivityAttributes: StravatronDetailedActivityAttributes;
-    const segmentIds: number[] = [];
-    let segments: StravatronDetailedSegment[];
-    let allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
-
-    return retrieveAccessToken()
-
-      .then((accessTokenRet: any) => {
-
-        accessToken = accessTokenRet;
-        return fetchDetailedActivity(accessToken, activityId);
-
-      }).then((nativeDetailedActivity: StravaNativeDetailedActivity) => {
-
-        detailedActivity = transformStravaDetailedActivity(nativeDetailedActivity);
-
-        // retrieve all segmentEfforts and segments from the detailed activity
-        for (const stravaSegmentEffort of nativeDetailedActivity.segment_efforts) {
-          segmentIds.push(stravaSegmentEffort.segment.id);
-        }
-
-        // get the segments that are in the database already and fetch the
-        // segments that are not in the database from strava (and add them to the db)
-        return getSegments(accessToken, segmentIds);
-
-      }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
-
-        segments = detailedSegmentsRet;
-
-        const athleteId = '2843574';            // pa
-        // const athleteId = '7085811';         // ma
-
-        return getAllEffortsForAllSegments(accessToken, athleteId, detailedActivity, segments);
-
-      }).then((allEffortsForSegmentsInCurrentActivity) => {
-
-        allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
-
-        return fetchStreams(accessToken, activityId);
-
-      }).then((streams: StravatronStream[]) => {
-
-        const stravatronStreamData: StravatronActivityStreams = getStreamData(detailedActivity.id, streams);
-
-        // add streams to db
-        // TEDTODO - ignore promise return - is this correct?
-        addStreamsToDb(stravatronStreamData)
-          .then(() => {
-            
-            // TEDTODO - put elsewhere
-            detailedActivityAttributes =
-            {
-              achievementCount: detailedActivity.achievementCount,
-              athleteId: detailedActivity.athleteId,
-              averageSpeed: detailedActivity.averageSpeed,
-              averageTemp: detailedActivity.averageTemp,
-              averageWatts: detailedActivity.averageWatts,
-              deviceWatts: detailedActivity.deviceWatts,
-              distance: detailedActivity.distance,
-              elapsedTime: detailedActivity.elapsedTime,
-              elevHigh: detailedActivity.elevHigh,
-              elevLow: detailedActivity.elevLow,
-              endLatlng: detailedActivity.endLatlng,
-              id: detailedActivity.id,
-              kilojoules: detailedActivity.kilojoules,
-              city: detailedActivity.city,
-              country: detailedActivity.country,
-              state: detailedActivity.state,
-              map: detailedActivity.map,
-              maxSpeed: detailedActivity.maxSpeed,
-              movingTime: detailedActivity.movingTime,
-              name: detailedActivity.name,
-              prCount: detailedActivity.prCount,
-              resourceState: detailedActivity.resourceState,
-              startDate: detailedActivity.startDate,
-              startDateLocal: detailedActivity.startDateLocal,
-              startLatitude: detailedActivity.startLatitude,
-              startLatlng: detailedActivity.startLatlng,
-              startLongitude: detailedActivity.startLongitude,
-              timezone: detailedActivity.timezone,
-              totalElevationGain: detailedActivity.totalElevationGain,
-              weightedAverageWatts: detailedActivity.weightedAverageWatts,
-              description: detailedActivity.description,
-              calories: detailedActivity.calories,
-              averageCadence: detailedActivity.averageCadence,
-              averageHeartrate: detailedActivity.averageHeartrate,
-              deviceName: detailedActivity.deviceName,
-              hasHeartrate: detailedActivity.hasHeartrate,
-              maxHeartrate: detailedActivity.maxHeartrate,
-              maxWatts: detailedActivity.maxWatts,
-              type: detailedActivity.type,
-              utcOffset: detailedActivity.utcOffset,
-              bestEfforts: detailedActivity.bestEfforts,
-            };
-
-            // merge this detailed activity data with the existing summary activity data
-            return addActivityDetailsToDb(detailedActivityAttributes).then(() => {
-              const detailedActivityData: StravatronDetailedActivityData = {
-                detailedActivityAttributes,
-                streams: stravatronStreamData,
-                segments,
-                allSegmentEffortsForSegmentsInActivity,
-              };
-              response.json(detailedActivityData);
+  return getActivityAttributes(Number(activityId))
+    .then((activityAttributes: StravatronDetailedActivityAttributes) => {
+      if (!isNil(activityAttributes) && activityAttributes.detailsLoaded) {
+        // load data from db
+        return getActivitySegmentEffortsFromDb(Number(activityId))
+          .then((segmentEfforts: StravatronSegmentEffort[]) => {
+            const segmentIds: number[] = segmentEfforts.map( (segmentEffort) => {
+              return segmentEffort.segmentId;
             });
+            return getSegmentsFromDb(segmentIds)
+          }).then((segments: StravatronDetailedSegment[]) => {
+            return getStreamDataFromDb(Number(activityId));
+          }).then((activityStreams: StravatronActivityStreams) => {
+            console.log(activityStreams);
           });
+        // const detailedActivityData: StravatronDetailedActivityData = {
+        //   detailedActivityAttributes: activityAttributes,
+        //   streams: stravatronStreamData,
+        //   segments,
+        //   allSegmentEffortsForSegmentsInActivity,
+        // };
+        // response.json(detailedActivityData);
+      }
+      else {
+        let accessToken: any;
+        let detailedActivity: StravatronDetailedActivity;
+        let detailedActivityAttributes: StravatronDetailedActivityAttributes;
+        const segmentIds: number[] = [];
+        let segments: StravatronDetailedSegment[];
+        let allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
 
-      });
-  }
+        return retrieveAccessToken()
+
+          .then((accessTokenRet: any) => {
+
+            accessToken = accessTokenRet;
+            return fetchDetailedActivity(accessToken, activityId);
+
+          }).then((nativeDetailedActivity: StravaNativeDetailedActivity) => {
+
+            detailedActivity = transformStravaDetailedActivity(nativeDetailedActivity);
+
+            // retrieve all segmentEfforts and segments from the detailed activity
+            for (const stravaSegmentEffort of nativeDetailedActivity.segment_efforts) {
+              segmentIds.push(stravaSegmentEffort.segment.id);
+            }
+
+            // get the segments that are in the database already and fetch the
+            // segments that are not in the database from strava (and add them to the db)
+            return getSegments(accessToken, segmentIds);
+
+          }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
+
+            segments = detailedSegmentsRet;
+
+            const athleteId = '2843574';            // pa
+            // const athleteId = '7085811';         // ma
+
+            return getAllEffortsForAllSegments(accessToken, athleteId, detailedActivity, segments);
+
+          }).then((allEffortsForSegmentsInCurrentActivity) => {
+
+            allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
+
+            return fetchStreams(accessToken, activityId);
+
+          }).then((streams: StravatronStream[]) => {
+
+            const stravatronStreamData: StravatronActivityStreams = getStreamData(detailedActivity.id, streams);
+
+            // add streams to db
+            // TEDTODO - ignore promise return - is this correct?
+            addStreamsToDb(stravatronStreamData)
+              .then(() => {
+
+                // TEDTODO - put elsewhere
+                detailedActivityAttributes =
+                {
+                  achievementCount: detailedActivity.achievementCount,
+                  athleteId: detailedActivity.athleteId,
+                  averageSpeed: detailedActivity.averageSpeed,
+                  averageTemp: detailedActivity.averageTemp,
+                  averageWatts: detailedActivity.averageWatts,
+                  detailsLoaded: false,
+                  deviceWatts: detailedActivity.deviceWatts,
+                  distance: detailedActivity.distance,
+                  elapsedTime: detailedActivity.elapsedTime,
+                  elevHigh: detailedActivity.elevHigh,
+                  elevLow: detailedActivity.elevLow,
+                  endLatlng: detailedActivity.endLatlng,
+                  id: detailedActivity.id,
+                  kilojoules: detailedActivity.kilojoules,
+                  city: detailedActivity.city,
+                  country: detailedActivity.country,
+                  state: detailedActivity.state,
+                  map: detailedActivity.map,
+                  maxSpeed: detailedActivity.maxSpeed,
+                  movingTime: detailedActivity.movingTime,
+                  name: detailedActivity.name,
+                  prCount: detailedActivity.prCount,
+                  resourceState: detailedActivity.resourceState,
+                  startDate: detailedActivity.startDate,
+                  startDateLocal: detailedActivity.startDateLocal,
+                  startLatitude: detailedActivity.startLatitude,
+                  startLatlng: detailedActivity.startLatlng,
+                  startLongitude: detailedActivity.startLongitude,
+                  timezone: detailedActivity.timezone,
+                  totalElevationGain: detailedActivity.totalElevationGain,
+                  weightedAverageWatts: detailedActivity.weightedAverageWatts,
+                  description: detailedActivity.description,
+                  calories: detailedActivity.calories,
+                  averageCadence: detailedActivity.averageCadence,
+                  averageHeartrate: detailedActivity.averageHeartrate,
+                  deviceName: detailedActivity.deviceName,
+                  hasHeartrate: detailedActivity.hasHeartrate,
+                  maxHeartrate: detailedActivity.maxHeartrate,
+                  maxWatts: detailedActivity.maxWatts,
+                  type: detailedActivity.type,
+                  utcOffset: detailedActivity.utcOffset,
+                  bestEfforts: detailedActivity.bestEfforts,
+                };
+
+                // merge this detailed activity data with the existing summary activity data
+                return addActivityDetailsToDb(detailedActivityAttributes).then(() => {
+                  const detailedActivityData: StravatronDetailedActivityData = {
+                    detailedActivityAttributes,
+                    streams: stravatronStreamData,
+                    segments,
+                    allSegmentEffortsForSegmentsInActivity,
+                  };
+                  response.json(detailedActivityData);
+                });
+              });
+
+          });
+      }
+    });
 }
 
 function getAllEffortsForAllSegments(accessToken: any, athleteId: string, detailedActivity: StravatronDetailedActivity, segments: StravatronDetailedSegment[]): Promise<StravatronSegmentEffortsForSegment[]> {
@@ -439,6 +498,18 @@ function getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity: Str
   return segmentEffortsInActivity;
 }
 
+function getStreamDataFromDb(activityId: number): Promise<StravatronActivityStreams> {
+  const query = ActivityStreams.find({});
+  const promise: Promise<Document[]> = query.exec();
+  return promise.then((activityStreamsDocs: Document[]) => {
+    if (isArray(activityStreamsDocs) && activityStreamsDocs.length > 0) {
+      const activityStreams: StravatronActivityStreams = activityStreamsDocs[0].toObject();
+      return Promise.resolve(activityStreams);
+    }
+    return Promise.resolve(null);
+  });
+}
+
 function getStreamData(activityId: number, stravaStreams: StravatronStream[]): StravatronActivityStreams {
 
   let timeData: any[];
@@ -497,26 +568,26 @@ function getStreamData(activityId: number, stravaStreams: StravatronStream[]): S
 }
 
 function addActivityDetailsToDb(detailedActivityAttributes: StravatronDetailedActivityAttributes): Promise<Document> {
- const conditions = { id: detailedActivityAttributes.id };
- const detailedAttributes: any = {
-  detailsLoaded: true,
-  description: detailedActivityAttributes.description,
-  calories: detailedActivityAttributes.calories,
-  averageCadence: detailedActivityAttributes.averageCadence,
-  averageHeartrate: detailedActivityAttributes.averageHeartrate,
-  deviceName: detailedActivityAttributes.deviceName,
-  hasHeartrate: detailedActivityAttributes.hasHeartrate,
-  maxHeartrate: detailedActivityAttributes.maxHeartrate,
-  maxWatts: detailedActivityAttributes.maxWatts,
-  type: detailedActivityAttributes.type,
-  utcOffset: detailedActivityAttributes.utcOffset,
- };
- const query = Activity.findOneAndUpdate(conditions, detailedAttributes);
- const promise: Promise<Document> = query.exec();
- return promise
-   .then((detailedActivity: Document) => {
-     return Promise.resolve(detailedActivity);
-   });
+  const conditions = { id: detailedActivityAttributes.id };
+  const detailedAttributes: any = {
+    detailsLoaded: true,
+    description: detailedActivityAttributes.description,
+    calories: detailedActivityAttributes.calories,
+    averageCadence: detailedActivityAttributes.averageCadence,
+    averageHeartrate: detailedActivityAttributes.averageHeartrate,
+    deviceName: detailedActivityAttributes.deviceName,
+    hasHeartrate: detailedActivityAttributes.hasHeartrate,
+    maxHeartrate: detailedActivityAttributes.maxHeartrate,
+    maxWatts: detailedActivityAttributes.maxWatts,
+    type: detailedActivityAttributes.type,
+    utcOffset: detailedActivityAttributes.utcOffset,
+  };
+  const query = Activity.findOneAndUpdate(conditions, detailedAttributes);
+  const promise: Promise<Document> = query.exec();
+  return promise
+    .then((detailedActivity: Document) => {
+      return Promise.resolve(detailedActivity);
+    });
 }
 
 function getDateOfLastFetchedActivityFromDb(): Promise<Date> {
