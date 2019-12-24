@@ -166,7 +166,7 @@ function getSegmentEffortsForSegmentsFromDb(segmentIds: number[]): Promise<Strav
 }
 
 function getSegmentsFromDb(segmentIds: number[]): Promise<StravatronDetailedSegment[]> {
-  const query = Segment.find({ id: { $in: segmentIds } })
+  const query = Segment.find({ id: { $in: segmentIds } });
   const promise: Promise<Document[]> = query.exec();
   return promise.then((segmentDocs: Document[]) => {
     if (isArray(segmentDocs)) {
@@ -177,8 +177,6 @@ function getSegmentsFromDb(segmentIds: number[]): Promise<StravatronDetailedSegm
     }
     return Promise.resolve([]);
   });
-
-  return Promise.resolve(null);
 }
 
 // detailed activity
@@ -207,7 +205,6 @@ export function getDetailedActivity(request: Request, response: Response): Promi
             allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
             return getStreamDataFromDb(Number(activityId));
           }).then((activityStreams: StravatronActivityStreams) => {
-            console.log(activityStreams);
             const detailedActivityData: StravatronDetailedActivityData = {
               detailedActivityAttributes: activityAttributes,
               streams: activityStreams,
@@ -221,9 +218,6 @@ export function getDetailedActivity(request: Request, response: Response): Promi
         let accessToken: any;
         let detailedActivity: StravatronDetailedActivity;
         let detailedActivityAttributes: StravatronDetailedActivityAttributes;
-        const segmentIds: number[] = [];
-        let segments: StravatronDetailedSegment[];
-        let allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
 
         return retrieveAccessToken()
 
