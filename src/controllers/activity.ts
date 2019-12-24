@@ -183,7 +183,7 @@ function getSegmentsFromDb(segmentIds: number[]): Promise<StravatronDetailedSegm
 export function getDetailedActivity(request: Request, response: Response): Promise<any> {
 
   const activityId: string = request.params.id;
-  let segmentIds: number[];
+  let segmentIds: number[] = [];
   let segments: StravatronDetailedSegment[];
   let allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
 
