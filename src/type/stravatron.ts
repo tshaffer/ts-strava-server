@@ -119,18 +119,19 @@ export interface StravatronSummaryActivity {
 }
 
 export interface StravatronDetailedActivity extends StravatronSummaryActivity {
+  // TEDTODO - verify that none of these are returned when retrieving a summary activity
   description: string;
   calories: number;
   segmentEfforts: StravatronSegmentEffort[];
 
-  averageCadence: number;
-  averageHeartrate: number;
+  averageCadence: number; // summary
+  averageHeartrate: number; // summary
   deviceName: string;
-  hasHeartrate: boolean;
-  maxHeartrate: number;
-  maxWatts: number;
-  type: string;
-  utcOffset: number;
+  hasHeartrate: boolean; // summary
+  maxHeartrate: number; // summary
+  maxWatts: number; // summary
+  type: string; // summary
+  utcOffset: number; // summary
 
   bestEfforts?: any; // DetailedSegmentEffort or DetailedSegmentEffort[] ??
 }

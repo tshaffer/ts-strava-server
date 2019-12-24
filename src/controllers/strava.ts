@@ -147,6 +147,7 @@ export function fetchDetailedActivity(accessToken: string, activityId: string): 
       });
   });
 }
+
 export function transformStravaDetailedActivity(stravaDetailedActivity: StravaNativeDetailedActivity): StravatronDetailedActivity {
 
   const segmentEfforts: StravatronSegmentEffort[] = [];
@@ -350,5 +351,19 @@ function transformStravaSegment(stravaSegment: StravaNativeDetailedSegment): Str
   };
   return stravatronDetailedSegment;
 }
+
+export function fetchSegmentEffort(accessToken: string, segmentEffortId: number): Promise<any> {
+
+  return new Promise((resolve) => {
+
+    const path = 'segment_efforts/' + segmentEffortId.toString();
+
+    fetchStravaData(path, accessToken)
+      .then((stravaSegmentEffort) => {
+        resolve(stravaSegmentEffort);
+      });
+  });
+}
+
 
 // retrieveBaseMapSegments
