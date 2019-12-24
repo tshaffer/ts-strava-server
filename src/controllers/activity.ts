@@ -145,8 +145,28 @@ function getActivitySegmentEffortsFromDb(activityId: number): Promise<Stravatron
   });
 }
 
+function getSegmentEffortsForSegmentsFromDb(segmentIds: number[]): Promise<StravatronSegmentEffortsForSegment[]> {
+
+  const allEffortsForSegmentsInCurrentActivity: StravatronSegmentEffortsForSegment[] = [];
+
+  const getNextEffortsForSegment = (index: number): Promise<StravatronSegmentEffortsForSegment[]> => {
+
+    if (index >= segmentIds.length) {
+      return Promise.resolve(allEffortsForSegmentsInCurrentActivity);
+    }
+
+    return getSegmentEffortsForSegmentFromDb(segmentIds[index])
+      .then((segmentEffortsForSegment: StravatronSegmentEffortsForSegment) => {
+        allEffortsForSegmentsInCurrentActivity.push(segmentEffortsForSegment);
+        return getNextEffortsForSegment(index + 1);
+      });
+  };
+
+  return getNextEffortsForSegment(0);
+}
+
 function getSegmentsFromDb(segmentIds: number[]): Promise<StravatronDetailedSegment[]> {
-  const query = Segment.find({ id: {$in: segmentIds}})
+  const query = Segment.find({ id: { $in: segmentIds } })
   const promise: Promise<Document[]> = query.exec();
   return promise.then((segmentDocs: Document[]) => {
     if (isArray(segmentDocs)) {
@@ -165,6 +185,9 @@ function getSegmentsFromDb(segmentIds: number[]): Promise<StravatronDetailedSegm
 export function getDetailedActivity(request: Request, response: Response): Promise<any> {
 
   const activityId: string = request.params.id;
+  let segmentIds: number[];
+  let segments: StravatronDetailedSegment[];
+  let allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
 
   // check to see if this activity already exists in the db as a detailed activity
   return getActivityAttributes(Number(activityId))
@@ -173,22 +196,26 @@ export function getDetailedActivity(request: Request, response: Response): Promi
         // load data from db
         return getActivitySegmentEffortsFromDb(Number(activityId))
           .then((segmentEfforts: StravatronSegmentEffort[]) => {
-            const segmentIds: number[] = segmentEfforts.map( (segmentEffort) => {
+            segmentIds = segmentEfforts.map((segmentEffort) => {
               return segmentEffort.segmentId;
             });
-            return getSegmentsFromDb(segmentIds)
-          }).then((segments: StravatronDetailedSegment[]) => {
+            return getSegmentsFromDb(segmentIds);
+          }).then((segmentsRet: StravatronDetailedSegment[]) => {
+            segments = segmentsRet;
+            return getSegmentEffortsForSegmentsFromDb(segmentIds);
+          }).then((allEffortsForSegmentsInCurrentActivity) => {
+            allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
             return getStreamDataFromDb(Number(activityId));
           }).then((activityStreams: StravatronActivityStreams) => {
             console.log(activityStreams);
+            const detailedActivityData: StravatronDetailedActivityData = {
+              detailedActivityAttributes: activityAttributes,
+              streams: activityStreams,
+              segments,
+              allSegmentEffortsForSegmentsInActivity,
+            };
+            response.json(detailedActivityData);
           });
-        // const detailedActivityData: StravatronDetailedActivityData = {
-        //   detailedActivityAttributes: activityAttributes,
-        //   streams: stravatronStreamData,
-        //   segments,
-        //   allSegmentEffortsForSegmentsInActivity,
-        // };
-        // response.json(detailedActivityData);
       }
       else {
         let accessToken: any;
