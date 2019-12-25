@@ -573,7 +573,7 @@ function getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity: Str
 }
 
 function getStreamDataFromDb(activityId: number): Promise<StravatronActivityStreams> {
-  const query = ActivityStreams.find({});
+  const query = ActivityStreams.find({ activityId });
   const promise: Promise<Document[]> = query.exec();
   return promise.then((activityStreamsDocs: Document[]) => {
     if (isArray(activityStreamsDocs) && activityStreamsDocs.length > 0) {

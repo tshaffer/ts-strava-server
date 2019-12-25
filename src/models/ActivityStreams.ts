@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 
 const ActivityStreamsSchema = new Schema(
   {
-    activityId: { type: [Number], required: true, unique: true },
+    activityId: { type: Number, required: true, unique: true },
     time: { type: [Number], required: true },
     location: { type: [[Number]], required: true },
     elevation: { type: [Number], required: true },
