@@ -35,23 +35,28 @@ export function getSummaryActivities(request: Request, response: Response) {
 
   console.log('getActivities handler:');
 
-  retrieveAccessToken()
-    .then((accessToken: any) => {
-      getSecondsSinceLastFetch().then((secondsSinceLastFetch) => {
-        return fetchSummaryActivities(accessToken, secondsSinceLastFetch);
-      }).then((summaryActivities: StravatronSummaryActivity[]) => {
-        addSummaryActivitiesToDb(summaryActivities).then(() => {
-          const dateOfLastActivity = getDateOfLastFetchedActivity(summaryActivities);
-          if (isNil(dateOfLastActivity)) {
-            return response.json(summaryActivities);
-          }
-          console.log('dateOfLastActivity');
-          console.log(dateOfLastActivity);
-          setDateOfLastFetchedActivityInDb(dateOfLastActivity).then(() => {
-            response.json(summaryActivities);
+  // get activities from db
+  return getActivitiesFromDb()
+    .then((dbSummaryActivities: StravatronSummaryActivity[]) => {
+      retrieveAccessToken()
+        .then((accessToken: any) => {
+          getSecondsSinceLastFetch().then((secondsSinceLastFetch) => {
+            return fetchSummaryActivities(accessToken, secondsSinceLastFetch);
+          }).then((summaryActivities: StravatronSummaryActivity[]) => {
+            addSummaryActivitiesToDb(summaryActivities).then(() => {
+              const dateOfLastActivity = getDateOfLastFetchedActivity(summaryActivities);
+              summaryActivities = summaryActivities.concat(summaryActivities, dbSummaryActivities);
+              if (isNil(dateOfLastActivity)) {
+                return response.json(summaryActivities);
+              }
+              console.log('dateOfLastActivity');
+              console.log(dateOfLastActivity);
+              setDateOfLastFetchedActivityInDb(dateOfLastActivity).then(() => {
+                response.json(summaryActivities);
+              });
+            });
           });
         });
-      });
     });
 }
 
@@ -125,6 +130,17 @@ function setDateOfLastFetchedActivityInDb(dateOfLastFetchedActivity: Date): Prom
         return Promise.resolve();
       });
     }
+  });
+}
+
+function getActivitiesFromDb(): Promise<StravatronSummaryActivity[]> {
+  const query = Activity.find({});
+  const promise: Promise<Document[]> = query.exec();
+  return promise.then((activityDocs: Document[]) => {
+    const activities: StravatronSummaryActivity[] = activityDocs.map((activityDoc: Document) => {
+      return activityDoc.toObject();
+    });
+    return Promise.resolve(activities);
   });
 }
 
@@ -264,7 +280,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
             // get the segments that are in the database already and fetch the
             // segments that are not in the database from strava (and add them to the db)
             return getSegments(accessToken, ids);
-          
+
           }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
 
             segments = detailedSegmentsRet;
