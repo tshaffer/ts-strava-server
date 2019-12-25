@@ -40,6 +40,9 @@ export function getSummaryActivities(request: Request, response: Response) {
       }).then((summaryActivities: StravatronSummaryActivity[]) => {
         addSummaryActivitiesToDb(summaryActivities).then(() => {
           const dateOfLastActivity = getDateOfLastFetchedActivity(summaryActivities);
+          if (isNil(dateOfLastActivity)) {
+            return response.json(summaryActivities);
+          }
           console.log('dateOfLastActivity');
           console.log(dateOfLastActivity);
           setDateOfLastFetchedActivityInDb(dateOfLastActivity).then(() => {
@@ -84,6 +87,11 @@ function getSecondsSinceLastFetch(): Promise<any> {
 }
 
 function getDateOfLastFetchedActivity(summaryActivities: StravatronSummaryActivity[]): Date {
+  
+  if (summaryActivities.length === 0) {
+    return null;
+  }
+
   let dateOfLastFetchedActivity = new Date(1970, 0, 0, 0, 0, 0, 0);
   for (const summaryActivity of summaryActivities) {
     const activityDate = new Date(summaryActivity.startDateLocal);
