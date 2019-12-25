@@ -15,6 +15,7 @@ import {
   StravatronSummaryActivity,
   StravatronDetailedActivityData,
   StravaNativeDetailedActivity,
+  ZwiftSegmentSpec,
 } from '../type';
 import { fetchStreams, fetchSegment, fetchAllEfforts, transformStravaDetailedActivity } from './strava';
 import Activity from '../models/Activity';
@@ -22,6 +23,7 @@ import Segment from '../models/Segment';
 import SegmentEffort from '../models/SegmentEffort';
 import ActivityStreams from '../models/ActivityStreams';
 import AppVariables from '../models/AppVariables';
+import ZwiftSegment from '../models/ZwiftSegment';
 
 interface DbSegmentData {
   segmentIdsNotInDb: number[];
@@ -87,7 +89,7 @@ function getSecondsSinceLastFetch(): Promise<any> {
 }
 
 function getDateOfLastFetchedActivity(summaryActivities: StravatronSummaryActivity[]): Date {
-  
+
   if (summaryActivities.length === 0) {
     return null;
   }
@@ -243,10 +245,26 @@ export function getDetailedActivity(request: Request, response: Response): Promi
               segmentIds.push(stravaSegmentEffort.segment.id);
             }
 
+            if (detailedActivity.type === 'VirtualRide') {
+              return getZwiftSegmentIds()
+                .then((zwiftSegmentIds: number[]) => {
+                  const zwiftSegmentIdsInActivity: number[] = segmentIds.filter((value, index, arr) => {
+                    return zwiftSegmentIds.indexOf(value) > 0;
+                  });
+                  console.log(zwiftSegmentIdsInActivity);
+                  return Promise.resolve(zwiftSegmentIdsInActivity);
+                });
+            }
+            else {
+              return Promise.resolve(segmentIds);
+            }
+
+          }).then((ids: number[]) => {
+
             // get the segments that are in the database already and fetch the
             // segments that are not in the database from strava (and add them to the db)
-            return getSegments(accessToken, segmentIds);
-
+            return getSegments(accessToken, ids);
+          
           }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
 
             segments = detailedSegmentsRet;
@@ -435,6 +453,18 @@ function getSegmentDataFromDb(allSegmentIds: number[]): Promise<DbSegmentData> {
   }).catch((err: Error) => {
     return Promise.reject(err);
   });
+}
+
+function getZwiftSegmentIds(): Promise<number[]> {
+  const query = ZwiftSegment.find({});
+  const promise: Promise<Document[]> = query.exec();
+  return promise
+    .then((zwiftSegmentDocs: Document[]) => {
+      const zwiftSegmentIds: number[] = zwiftSegmentDocs.map((zwiftSegmentDoc: Document) => {
+        return (zwiftSegmentDoc.toObject() as ZwiftSegmentSpec).id;
+      });
+      return Promise.resolve(zwiftSegmentIds);
+    });
 }
 
 function getSegmentEffortsForSegmentFromDb(segmentId: number): Promise<StravatronSegmentEffort[]> {

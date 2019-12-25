@@ -179,3 +179,8 @@ export interface StravatronDetailedActivityAttributes {
   type: string;
   utcOffset: number;
 }
+
+export interface ZwiftSegmentSpec {
+  name: string;
+  id: number;
+}

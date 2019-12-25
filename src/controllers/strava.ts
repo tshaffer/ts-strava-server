@@ -145,7 +145,7 @@ export function fetchDetailedActivity(accessToken: string, activityId: string): 
 
   return new Promise((resolve) => {
 
-    const path = 'activities/' + activityId;
+    const path = 'activities/' + activityId + '?include_all_efforts=true';
 
     fetchStravaData(path, accessToken)
       .then((stravaDetailedActivity: StravaNativeDetailedActivity) => {
