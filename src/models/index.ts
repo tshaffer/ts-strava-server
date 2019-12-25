@@ -4,3 +4,4 @@ export * from './AppVariables';
 export * from './Segment';
 export * from './SegmentEffort';
 export * from './SummaryActivity';
+export * from './ZwiftSegment';

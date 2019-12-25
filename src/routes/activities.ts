@@ -12,6 +12,7 @@ import {
   getStreams,
   getStravaSegmentEffort,
   getStravaSegment,
+  insertZwiftSegments,
  } from '../controllers';
 
 activitiesRouter.get('/activities', getSummaryActivities);
@@ -26,5 +27,8 @@ activitiesRouter.post('/stream', createStream);
 activitiesRouter.get('/stream/:id', getStreams);
 activitiesRouter.get('/segment/:id', getStravaSegment);
 activitiesRouter.get('/segmentEffort/:id', getStravaSegmentEffort);
+
+// utility endpoints
+activitiesRouter.post('/insertZwiftSegments', insertZwiftSegments);
 
 export default activitiesRouter;
