@@ -1,20 +1,20 @@
 import https from 'https';
 import axios from 'axios';
 
-import { 
-  StravatronSummaryActivity, 
-  StravaNativeSummaryActivity, 
-  StravatronDetailedActivity, 
+import {
+  StravatronSummaryActivity,
+  StravaNativeSummaryActivity,
+  StravatronDetailedActivity,
   StravaNativeDetailedActivity,
-  StravatronSegmentEffort, 
-  StravatronAchievement, 
-  StravaNativeDetailedSegment, 
-  StravaNativeSummarySegment, 
-  StravatronDetailedSegment, 
-  StravaNativeStream, 
-  StravatronStream, 
+  StravatronSegmentEffort,
+  StravatronAchievement,
+  StravaNativeDetailedSegment,
+  StravaNativeSummarySegment,
+  StravatronDetailedSegment,
+  StravaNativeStream,
+  StravatronStream,
   StravaNativeDetailedSegmentEffort,
- } from '../type';
+} from '../type';
 
 export function retrieveAccessToken() {
 
@@ -100,6 +100,8 @@ function transformStravaSummaryActivities(stravaSummaryActivities: StravaNativeS
     const activity: StravatronSummaryActivity = {
       achievementCount: stravaNativeActivity.achievement_count,
       athleteId: stravaNativeActivity.athlete.id,
+      averageCadence: stravaNativeActivity.average_cadence,
+      averageHeartrate: stravaNativeActivity.average_heartrate,
       averageSpeed: stravaNativeActivity.average_speed,
       averageWatts: stravaNativeActivity.average_watts,
       distance: stravaNativeActivity.distance,
@@ -107,13 +109,15 @@ function transformStravaSummaryActivities(stravaSummaryActivities: StravaNativeS
       elevHigh: stravaNativeActivity.elev_high,
       elevLow: stravaNativeActivity.elev_low,
       endLatlng: stravaNativeActivity.end_latlng,
+      hasHeartrate: stravaNativeActivity.has_heartrate,
       id: stravaNativeActivity.id,
       kilojoules: stravaNativeActivity.kilojoules,
       city: stravaNativeActivity.location_city,
       country: stravaNativeActivity.location_country,
-      state: stravaNativeActivity.location_state,
       map: stravaNativeActivity.map,
+      maxHeartrate: stravaNativeActivity.max_heartrate,
       maxSpeed: stravaNativeActivity.max_speed,
+      maxWatts: stravaNativeActivity.max_watts,
       movingTime: stravaNativeActivity.moving_time,
       name: stravaNativeActivity.name,
       prCount: stravaNativeActivity.pr_count,
@@ -125,6 +129,8 @@ function transformStravaSummaryActivities(stravaSummaryActivities: StravaNativeS
       startLongitude: stravaNativeActivity.start_longitude,
       timezone: stravaNativeActivity.timezone,
       totalElevationGain: stravaNativeActivity.total_elevation_gain,
+      type: stravaNativeActivity.type,
+      utcOffset: stravaNativeActivity.utc_offset,
       deviceWatts: stravaNativeActivity.device_watts,
       weightedAverageWatts: stravaNativeActivity.weighted_average_watts,
       averageTemp: stravaNativeActivity.average_temp,
@@ -214,7 +220,6 @@ export function transformStravaDetailedActivity(stravaDetailedActivity: StravaNa
     elevLow: stravaDetailedActivity.elev_low,
     endLatlng: stravaDetailedActivity.end_latlng,
     country: stravaDetailedActivity.location_country,
-    state: stravaDetailedActivity.location_state,
     prCount: stravaDetailedActivity.pr_count,
     resourceState: stravaDetailedActivity.resource_state,
     startDate: stravaDetailedActivity.start_date,

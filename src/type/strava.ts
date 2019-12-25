@@ -173,6 +173,11 @@ export interface StravaNativeSummaryActivity {
   visibility: string;
   weighted_average_watts?: number;
   workout_type?: number;
+  average_cadence: number;
+  average_heartrate: number;
+  max_heartrate: number;
+  max_watts: number;
+
 }
 
 // **** for detailed activity, map includes polyline
@@ -190,10 +195,6 @@ export interface StravaNativeDetailedActivity extends StravaNativeSummaryActivit
   splits_standard: any; // Split
   laps: any; // Lap
   best_efforts?: any; // DetailedSegmentEffort or DetailedSegmentEffort[] ??
-  average_cadence: number;
-  average_heartrate: number;
-  max_heartrate: number;
-  max_watts: number;
   perceived_exertion: any;
   prefer_perceived_exertion: any;
 }

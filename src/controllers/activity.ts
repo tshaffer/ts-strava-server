@@ -290,7 +290,6 @@ export function getDetailedActivity(request: Request, response: Response): Promi
                   kilojoules: detailedActivity.kilojoules,
                   city: detailedActivity.city,
                   country: detailedActivity.country,
-                  state: detailedActivity.state,
                   map: detailedActivity.map,
                   maxSpeed: detailedActivity.maxSpeed,
                   movingTime: detailedActivity.movingTime,
