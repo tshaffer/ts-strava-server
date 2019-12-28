@@ -1,9 +1,23 @@
-export function getPowerData(time: any[], watts: any[]): any {
+// https://medium.com/critical-powers/formulas-from-training-and-racing-with-a-power-meter-2a295c661b46
+export function getPowerData(ftp: number, time: any[], watts: any[]): any {
 
-  // for now, assume that the nth entry in watts represent the power reading at n seconds
+  // for now, assume that the nth entry in watts represents the power reading at n seconds
   // if that turns out not to be true, use the values in time
+  // that is, assume that time.length is duration of workout in seconds
 
   const np = getNormalizedPower(watts);
+  const intensityFactor = getIntensityFactor(ftp, np);
+  const trainingStressScore = getTrainingStressScore(ftp, np, intensityFactor, time.length);
+
+  const powerData: any = {
+    np,
+    intensityFactor,
+    trainingStressScore,
+  };
+  console.log('power data:');
+  console.log(powerData);
+
+  return powerData;
 }
 
 function getNormalizedPower(watts: any[]): number {
@@ -21,9 +35,16 @@ function getNormalizedPower(watts: any[]): number {
   // Step 4: Take the fourth root of the average from the previous step. This is your normalized power.
   const np = Math.pow(average, 0.25);
 
-  console.log('Normalized power: ', np);
-
   return np;
+}
+
+function getIntensityFactor(ftp: number, np: number): number {
+  return np / ftp;
+}
+
+function getTrainingStressScore(ftp: number, np: number, intensityFactor: number, numSeconds: number): number {
+  const tss = (numSeconds * np * intensityFactor) / (ftp * 36);
+  return tss;
 }
 
 function getRollingAverages(values: number[], windowCount: number): number[] {

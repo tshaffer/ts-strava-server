@@ -579,7 +579,7 @@ function getStreamDataFromDb(activityId: number): Promise<StravatronActivityStre
   return promise.then((activityStreamsDocs: Document[]) => {
     if (isArray(activityStreamsDocs) && activityStreamsDocs.length > 0) {
       const activityStreams: StravatronActivityStreams = activityStreamsDocs[0].toObject();
-      getPowerData(activityStreams.time, activityStreams.watts);
+      getPowerData(181, activityStreams.time, activityStreams.watts);
       return Promise.resolve(activityStreams);
     }
     return Promise.resolve(null);
