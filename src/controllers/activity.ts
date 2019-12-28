@@ -24,6 +24,7 @@ import SegmentEffort from '../models/SegmentEffort';
 import ActivityStreams from '../models/ActivityStreams';
 import AppVariables from '../models/AppVariables';
 import ZwiftSegment from '../models/ZwiftSegment';
+import { getPowerData } from '../utilities';
 
 interface DbSegmentData {
   segmentIdsNotInDb: number[];
@@ -578,6 +579,7 @@ function getStreamDataFromDb(activityId: number): Promise<StravatronActivityStre
   return promise.then((activityStreamsDocs: Document[]) => {
     if (isArray(activityStreamsDocs) && activityStreamsDocs.length > 0) {
       const activityStreams: StravatronActivityStreams = activityStreamsDocs[0].toObject();
+      getPowerData(activityStreams.time, activityStreams.watts);
       return Promise.resolve(activityStreams);
     }
     return Promise.resolve(null);
