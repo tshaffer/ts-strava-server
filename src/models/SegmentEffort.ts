@@ -24,6 +24,11 @@ const SegmentEffortSchema = new Schema(
     deviceWatts: { type: Boolean },
     maxHeartrate: { type: Number, required: true },
     startDate: { type: Date, required: true },
+    startIndex: { type: Number},
+    endIndex: { type: Number},
+    normalizedPower: { type: Number},
+    intensityFactor: { type: Number},
+    trainingStressScore: { type: Number},
     komRank: { type: Number },
   },
 );

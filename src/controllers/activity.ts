@@ -16,6 +16,7 @@ import {
   StravatronDetailedActivityData,
   StravaNativeDetailedActivity,
   ZwiftSegmentSpec,
+  PowerData,
 } from '../type';
 import { fetchStreams, fetchSegment, fetchAllEfforts, transformStravaDetailedActivity } from './strava';
 import Activity from '../models/Activity';
@@ -278,6 +279,8 @@ export function getDetailedActivity(request: Request, response: Response): Promi
 
           }).then((ids: number[]) => {
 
+            segmentIds = ids;
+
             // get the segments that are in the database already and fetch the
             // segments that are not in the database from strava (and add them to the db)
             return getSegments(accessToken, ids);
@@ -301,8 +304,38 @@ export function getDetailedActivity(request: Request, response: Response): Promi
 
             const stravatronStreamData: StravatronActivityStreams = getStreamData(detailedActivity.id, streams);
 
+            // at this point, given the segmentEffort information for this activity and the streams, the code should be
+            // able to calculate the power data
+
+            // required information
+            //    segmentIds (represents the segments that were ridden for this activity which I'm interested in)
+            //    segmentEfforts - the ones for this activity that correspond to the segmentIds (above)
             // add streams to db
             // TEDTODO - ignore promise return - is this correct?
+            // console.log('segmentIds:');
+            // console.log(segmentIds);
+            // console.log('allSegmentEffortsForSegmentsInActivity');
+            // console.log(allSegmentEffortsForSegmentsInActivity);
+
+            // TEDTODO
+            // are these segmentEfforts the only ones I care about (Zwift)?
+            for (const segmentEffort of allSegmentEffortsForSegmentsInActivity) {
+              if (segmentEffort.activityId === detailedActivity.id && !isNil(segmentEffort.startIndex) && !isNil(segmentEffort.endIndex)) {
+                const powerData: PowerData = getPowerData(181, segmentEffort.startIndex, segmentEffort.endIndex, stravatronStreamData.time, stravatronStreamData.watts);
+                addSegmentEffortPower(segmentEffort.id, powerData.normalizedPower, powerData.intensityFactor, powerData.trainingStressScore)
+                  .then( (segmentEffortDoc) => {
+                    console.log('addSegmentEffortPower promised resolved:');
+                    console.log(segmentEffortDoc);
+                  });
+                // segmentEffort.normalizedPower = powerData.normalizedPower;
+                // segmentEffort.intensityFactor = powerData.intensityFactor;
+                // segmentEffort.trainingStressScore = powerData.trainingStressScore;
+                // console.log('segmentEffort:');
+                // console.log(segmentEffort);
+              }
+            }
+            console.log('allSegmentEffortsForSegmentsInActivity');
+            console.log(allSegmentEffortsForSegmentsInActivity);
             addStreamsToDb(stravatronStreamData)
               .then(() => {
 
@@ -422,6 +455,22 @@ function getAllEffortsForAllSegments(accessToken: any, athleteId: string, detail
 function setSegmentEffortsLoaded(segmentId: number): Promise<Document> {
   const conditions = { id: segmentId };
   const query = Segment.findOneAndUpdate(conditions, { allEffortsLoaded: true });
+  const promise: Promise<Document> = query.exec();
+  return promise
+    .then((segmentDocument: Document) => {
+      return Promise.resolve(segmentDocument);
+    });
+}
+
+function addSegmentEffortPower(
+  segmentEffortId: number, normalizedPower: number, intensityFactor: number, trainingStressScore: number): Promise<Document> {
+  const conditions = { id: segmentEffortId };
+  const query = SegmentEffort.findOneAndUpdate(conditions, { 
+    allEffortsLoaded: true,
+    normalizedPower,
+    intensityFactor,
+    trainingStressScore,
+   });
   const promise: Promise<Document> = query.exec();
   return promise
     .then((segmentDocument: Document) => {
@@ -565,6 +614,11 @@ function getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity: Str
         deviceWatts: effortForSegment.deviceWatts,
         maxHeartrate: effortForSegment.maxHeartrate,
         startDate: effortForSegment.startDate,
+        startIndex: effortForSegment.startIndex,
+        endIndex: effortForSegment.endIndex,
+        normalizedPower: effortForSegment.normalizedPower,
+        intensityFactor: effortForSegment.intensityFactor,
+        trainingStressScore: effortForSegment.trainingStressScore,
       };
 
       segmentEffortsInActivity.push(stravatronSegmentEffort);
@@ -579,7 +633,6 @@ function getStreamDataFromDb(activityId: number): Promise<StravatronActivityStre
   return promise.then((activityStreamsDocs: Document[]) => {
     if (isArray(activityStreamsDocs) && activityStreamsDocs.length > 0) {
       const activityStreams: StravatronActivityStreams = activityStreamsDocs[0].toObject();
-      getPowerData(181, activityStreams.time, activityStreams.watts);
       return Promise.resolve(activityStreams);
     }
     return Promise.resolve(null);

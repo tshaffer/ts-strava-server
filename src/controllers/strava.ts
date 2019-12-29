@@ -316,6 +316,8 @@ function transformStravaDetailedSegmentEffort(stravaDetailedSegmentEffort: Strav
     deviceWatts: stravaDetailedSegmentEffort.device_watts,
     maxHeartrate: stravaDetailedSegmentEffort.max_heartrate,
     startDate: stravaDetailedSegmentEffort.start_date,
+    startIndex: stravaDetailedSegmentEffort.start_index,
+    endIndex: stravaDetailedSegmentEffort.end_index,
     // komRank?: stravaDetailedSegment.kom_rank,
   };
 

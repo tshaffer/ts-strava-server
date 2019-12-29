@@ -63,6 +63,11 @@ export interface StravatronSegmentEffort {
   maxHeartrate: number;
   startDate: Date;
   komRank?: number;
+  startIndex?: number;
+  endIndex?: number;
+  normalizedPower?: number;
+  intensityFactor?: number;
+  trainingStressScore?: number;
 }
 
 export interface StravatronStream {
@@ -183,4 +188,10 @@ export interface StravatronDetailedActivityAttributes {
 export interface ZwiftSegmentSpec {
   name: string;
   id: number;
+}
+
+export interface PowerData {
+  normalizedPower: number;
+  intensityFactor: number;
+  trainingStressScore: number;
 }
