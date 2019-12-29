@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Request, Response } from 'express';
 import ZwiftSegment from '../models/ZwiftSegment';
+import { isNil } from 'lodash';
 
 export function insertZwiftSegments(request: Request, response: Response, next: any) {
 
@@ -16,6 +17,16 @@ export function insertZwiftSegments(request: Request, response: Response, next: 
     },
   ).then(() => {
     response.sendStatus(200);
+    response.end();
+  }).catch((err: any) => {
+    if (!isNil(err.code) && err.code === 11000) {
+      console.log('insertZwiftSegments: duplicate key error');
+      response.sendStatus(200);
+      response.end();
+    }
+    else {
+      throw (err);
+    }
   });
 }
 
