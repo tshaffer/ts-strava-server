@@ -32,8 +32,11 @@ interface DbSegmentData {
   segmentsInDb: StravatronDetailedSegment[];
 }
 
-// summary activities
-export function getSummaryActivities(request: Request, response: Response) {
+// gets activities
+//    first retrieves activites from db (these may or may not include detailed attributes)
+//    then retrieves any activities from strava that are newer than the ones in the db
+
+export function getActivities(request: Request, response: Response) {
 
   console.log('getActivities handler:');
 
@@ -306,9 +309,6 @@ export function getDetailedActivity(request: Request, response: Response): Promi
 
             // retrieve power data for entire ride
             const ridePowerData: PowerData = getPowerData(181, 0, stravatronStreamData.time.length - 1, stravatronStreamData.time, stravatronStreamData.watts);
-
-            // at this point, given the segmentEffort information for this activity and the streams, the code should be
-            // able to calculate the power data
 
             // required information
             //    segmentIds (represents the segments that were ridden for this activity which I'm interested in)
@@ -753,8 +753,18 @@ function addSegmentsToDb(detailedSegments: StravatronDetailedSegment[]): Promise
     {
       ordered: false,
     },
-  );
-}
+    ).then(() => {
+      return Promise.resolve();
+    }).catch((err: any) => {
+      if (!isNil(err.code) && err.code === 11000) {
+        console.log('addSegmentsToDb: duplicate key error');
+        return Promise.resolve();
+      }
+      else {
+        throw (err);
+      }
+    });
+  }
 
 function addSegmentEffortsToDb(segmentEfforts: StravatronSegmentEffort[]): Promise<any> {
   if (segmentEfforts.length === 0) {
@@ -774,6 +784,7 @@ function addStreamsToDb(activityStreams: StravatronActivityStreams): Promise<Doc
       return Promise.resolve(doc);
     }).catch((err: any) => {
       if (!isNil(err.code) && err.code === 11000) {
+        console.log('addStreamsToDb: duplicate key error');
         return Promise.resolve();
       }
       else {

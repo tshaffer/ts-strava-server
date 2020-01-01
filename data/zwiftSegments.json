@@ -72,6 +72,22 @@
     {
       "name": "Triple Loops",
       "id": 16781219
+    },
+    {
+      "name": "Fuego Flats Reverse Sprint",
+      "id": 0
+    },
+    {
+      "name": "Fuego Flats Forward Sprint",
+      "id": 0
+    },
+    {
+      "name": "Tempus Fugit",
+      "id": 0
+    },
+    {
+      "name": "Flat Test",
+      "id": 0
     }
   ]
 }

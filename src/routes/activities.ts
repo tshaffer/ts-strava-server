@@ -2,7 +2,7 @@ import express from 'express';
 const activitiesRouter = express.Router();
 
 import { 
-  getSummaryActivities,
+  getActivities,
   getDetailedActivity,
   createActivity,
   createSummaryActivity,
@@ -15,7 +15,7 @@ import {
   insertZwiftSegments,
  } from '../controllers';
 
-activitiesRouter.get('/activities', getSummaryActivities);
+activitiesRouter.get('/activities', getActivities);
 activitiesRouter.get('/activity/:id', getDetailedActivity);
 
 // test endpoints
