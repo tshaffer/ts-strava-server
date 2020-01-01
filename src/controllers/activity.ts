@@ -304,6 +304,9 @@ export function getDetailedActivity(request: Request, response: Response): Promi
 
             const stravatronStreamData: StravatronActivityStreams = getStreamData(detailedActivity.id, streams);
 
+            // retrieve power data for entire ride
+            const ridePowerData: PowerData = getPowerData(181, 0, stravatronStreamData.time.length - 1, stravatronStreamData.time, stravatronStreamData.watts);
+
             // at this point, given the segmentEffort information for this activity and the streams, the code should be
             // able to calculate the power data
 
@@ -312,26 +315,14 @@ export function getDetailedActivity(request: Request, response: Response): Promi
             //    segmentEfforts - the ones for this activity that correspond to the segmentIds (above)
             // add streams to db
             // TEDTODO - ignore promise return - is this correct?
-            // console.log('segmentIds:');
-            // console.log(segmentIds);
-            // console.log('allSegmentEffortsForSegmentsInActivity');
-            // console.log(allSegmentEffortsForSegmentsInActivity);
-
-            // TEDTODO
-            // are these segmentEfforts the only ones I care about (Zwift)?
             for (const segmentEffort of allSegmentEffortsForSegmentsInActivity) {
               if (segmentEffort.activityId === detailedActivity.id && !isNil(segmentEffort.startIndex) && !isNil(segmentEffort.endIndex)) {
-                const powerData: PowerData = getPowerData(181, segmentEffort.startIndex, segmentEffort.endIndex, stravatronStreamData.time, stravatronStreamData.watts);
-                addSegmentEffortPower(segmentEffort.id, powerData.normalizedPower, powerData.intensityFactor, powerData.trainingStressScore)
-                  .then( (segmentEffortDoc) => {
+                const segmentEffortPowerData: PowerData = getPowerData(181, segmentEffort.startIndex, segmentEffort.endIndex, stravatronStreamData.time, stravatronStreamData.watts);
+                addSegmentEffortPower(segmentEffort.id, segmentEffortPowerData.normalizedPower, segmentEffortPowerData.intensityFactor, segmentEffortPowerData.trainingStressScore)
+                  .then((segmentEffortDoc) => {
                     console.log('addSegmentEffortPower promised resolved:');
                     console.log(segmentEffortDoc);
                   });
-                // segmentEffort.normalizedPower = powerData.normalizedPower;
-                // segmentEffort.intensityFactor = powerData.intensityFactor;
-                // segmentEffort.trainingStressScore = powerData.trainingStressScore;
-                // console.log('segmentEffort:');
-                // console.log(segmentEffort);
               }
             }
             console.log('allSegmentEffortsForSegmentsInActivity');
@@ -383,6 +374,9 @@ export function getDetailedActivity(request: Request, response: Response): Promi
                   type: detailedActivity.type,
                   utcOffset: detailedActivity.utcOffset,
                   bestEfforts: detailedActivity.bestEfforts,
+                  normalizedPower: ridePowerData.normalizedPower,
+                  intensityFactor: ridePowerData.intensityFactor,
+                  trainingStressScore: ridePowerData.trainingStressScore,
                 };
 
                 // merge this detailed activity data with the existing summary activity data
@@ -465,12 +459,12 @@ function setSegmentEffortsLoaded(segmentId: number): Promise<Document> {
 function addSegmentEffortPower(
   segmentEffortId: number, normalizedPower: number, intensityFactor: number, trainingStressScore: number): Promise<Document> {
   const conditions = { id: segmentEffortId };
-  const query = SegmentEffort.findOneAndUpdate(conditions, { 
+  const query = SegmentEffort.findOneAndUpdate(conditions, {
     allEffortsLoaded: true,
     normalizedPower,
     intensityFactor,
     trainingStressScore,
-   });
+  });
   const promise: Promise<Document> = query.exec();
   return promise
     .then((segmentDocument: Document) => {
@@ -710,6 +704,9 @@ function addActivityDetailsToDb(detailedActivityAttributes: StravatronDetailedAc
     maxWatts: detailedActivityAttributes.maxWatts,
     type: detailedActivityAttributes.type,
     utcOffset: detailedActivityAttributes.utcOffset,
+    normalizedPower: detailedActivityAttributes.normalizedPower,
+    intensityFactor: detailedActivityAttributes.intensityFactor,
+    trainingStressScore: detailedActivityAttributes.trainingStressScore,
   };
   const query = Activity.findOneAndUpdate(conditions, detailedAttributes);
   const promise: Promise<Document> = query.exec();
@@ -771,6 +768,16 @@ function addSegmentEffortsToDb(segmentEfforts: StravatronSegmentEffort[]): Promi
   );
 }
 
-function addStreamsToDb(activityStreams: StravatronActivityStreams): Promise<Document> {
-  return ActivityStreams.create(activityStreams);
+function addStreamsToDb(activityStreams: StravatronActivityStreams): Promise<Document | void> {
+  return ActivityStreams.create(activityStreams)
+    .then((doc) => {
+      return Promise.resolve(doc);
+    }).catch((err: any) => {
+      if (!isNil(err.code) && err.code === 11000) {
+        return Promise.resolve();
+      }
+      else {
+        throw (err);
+      }
+    });
 }

@@ -137,6 +137,11 @@ export interface StravatronDetailedActivity extends StravatronSummaryActivity {
   segmentEfforts: StravatronSegmentEffort[];
 
   bestEfforts?: any; // DetailedSegmentEffort or DetailedSegmentEffort[] ??
+
+  // TEDTODO - not sure these are ever used in this interface
+  normalizedPower?: number;
+  intensityFactor?: number;
+  trainingStressScore?: number;
 }
 
 // detailsLoaded?
@@ -163,6 +168,7 @@ export interface StravatronDetailedActivityAttributes {
   endLatlng: StravaNativeLatLng;
   hasHeartrate: boolean;
   id: number;
+  intensityFactor?: number;
   kilojoules?: number;
   map: StravaNativePolylineMap; // does not include polyline
   maxHeartrate: number;
@@ -170,6 +176,7 @@ export interface StravatronDetailedActivityAttributes {
   maxWatts: number;
   movingTime: number;
   name: string;
+  normalizedPower?: number;
   prCount: number;
   resourceState: number;
   startDate: Date;
@@ -180,9 +187,10 @@ export interface StravatronDetailedActivityAttributes {
   state?: string;
   timezone: string;
   totalElevationGain: number;
-  weightedAverageWatts?: number;
+  trainingStressScore?: number;
   type: string;
   utcOffset: number;
+  weightedAverageWatts?: number;
 }
 
 export interface ZwiftSegmentSpec {

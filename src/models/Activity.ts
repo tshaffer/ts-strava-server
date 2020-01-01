@@ -51,6 +51,9 @@ const ActivitySchema = new Schema(
     maxWatts: { type: Number },
     type: { type: String },
     utcOffset: { type: Number },
+    normalizedPower: { type: Number },
+    intensityFactor: { type: Number },
+    trainingStressScore: { type: Number },
   },
 );
 
