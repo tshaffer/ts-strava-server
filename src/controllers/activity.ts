@@ -5,7 +5,6 @@ import { Document } from 'mongoose';
 
 import { fetchSummaryActivities, retrieveAccessToken, fetchDetailedActivity } from '../controllers';
 import {
-  StravatronDetailedActivity,
   StravatronSegmentEffort,
   StravatronDetailedActivityAttributes,
   StravatronActivityStreams,
@@ -17,6 +16,7 @@ import {
   StravaNativeDetailedActivity,
   ZwiftSegmentSpec,
   PowerData,
+  StravatronActivity,
 } from '../type';
 import { fetchStreams, fetchSegment, fetchAllEfforts, transformStravaDetailedActivity } from './strava';
 import Activity from '../models/Activity';
@@ -40,9 +40,8 @@ export function getActivities(request: Request, response: Response) {
 
   console.log('getActivities handler:');
 
-  // get activities from db
   return getActivitiesFromDb()
-    .then((dbSummaryActivities: StravatronSummaryActivity[]) => {
+    .then((dbActivities: StravatronActivity[]) => {
       retrieveAccessToken()
         .then((accessToken: any) => {
           getSecondsSinceLastFetch().then((secondsSinceLastFetch) => {
@@ -50,14 +49,14 @@ export function getActivities(request: Request, response: Response) {
           }).then((summaryActivities: StravatronSummaryActivity[]) => {
             addSummaryActivitiesToDb(summaryActivities).then(() => {
               const dateOfLastActivity = getDateOfLastFetchedActivity(summaryActivities);
-              summaryActivities = summaryActivities.concat(summaryActivities, dbSummaryActivities);
+              const activities: StravatronActivity[] = (summaryActivities as StravatronActivity[]).concat(dbActivities);
               if (isNil(dateOfLastActivity)) {
-                return response.json(summaryActivities);
+                return response.json(activities);
               }
               console.log('dateOfLastActivity');
               console.log(dateOfLastActivity);
               setDateOfLastFetchedActivityInDb(dateOfLastActivity).then(() => {
-                response.json(summaryActivities);
+                response.json(activities);
               });
             });
           });
@@ -138,11 +137,11 @@ function setDateOfLastFetchedActivityInDb(dateOfLastFetchedActivity: Date): Prom
   });
 }
 
-function getActivitiesFromDb(): Promise<StravatronSummaryActivity[]> {
+function getActivitiesFromDb(): Promise<StravatronActivity[]> {
   const query = Activity.find({});
   const promise: Promise<Document[]> = query.exec();
   return promise.then((activityDocs: Document[]) => {
-    const activities: StravatronSummaryActivity[] = activityDocs.map((activityDoc: Document) => {
+    const activities: StravatronActivity[] = activityDocs.map((activityDoc: Document) => {
       return activityDoc.toObject();
     });
     return Promise.resolve(activities);
@@ -246,8 +245,9 @@ export function getDetailedActivity(request: Request, response: Response): Promi
           });
       }
       else {
+        // fetch activity from strrava
         let accessToken: any;
-        let detailedActivity: StravatronDetailedActivity;
+        let detailedActivity: StravatronActivity;
         let detailedActivityAttributes: StravatronDetailedActivityAttributes;
 
         return retrieveAccessToken()
@@ -396,7 +396,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
     });
 }
 
-function getAllEffortsForAllSegments(accessToken: any, athleteId: string, detailedActivity: StravatronDetailedActivity, segments: StravatronDetailedSegment[]): Promise<StravatronSegmentEffortsForSegment[]> {
+function getAllEffortsForAllSegments(accessToken: any, athleteId: string, detailedActivity: StravatronActivity, segments: StravatronDetailedSegment[]): Promise<StravatronSegmentEffortsForSegment[]> {
 
   const allEffortsForSegmentsInCurrentActivity: StravatronSegmentEffortsForSegment[] = [];
   let segmentEffortsForSegment: StravatronSegmentEffortsForSegment;
@@ -540,7 +540,7 @@ function getSegmentEffortsForSegmentFromDb(segmentId: number): Promise<Stravatro
 }
 
 // get segment effort for the current activity and add it to the db
-function addActivitySegmentEffortToDb(detailedActivity: StravatronDetailedActivity, segmentId: number): Promise<StravatronSegmentEffort> {
+function addActivitySegmentEffortToDb(detailedActivity: StravatronActivity, segmentId: number): Promise<StravatronSegmentEffort> {
   for (const segmentEffort of detailedActivity.segmentEfforts) {
     if (segmentEffort.segmentId === segmentId) {
       return addSegmentEffortsToDb([segmentEffort])

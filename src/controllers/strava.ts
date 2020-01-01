@@ -4,7 +4,6 @@ import axios from 'axios';
 import {
   StravatronSummaryActivity,
   StravaNativeSummaryActivity,
-  StravatronDetailedActivity,
   StravaNativeDetailedActivity,
   StravatronSegmentEffort,
   StravatronAchievement,
@@ -14,6 +13,7 @@ import {
   StravaNativeStream,
   StravatronStream,
   StravaNativeDetailedSegmentEffort,
+  StravatronActivity,
 } from '../type';
 
 export function retrieveAccessToken() {
@@ -154,7 +154,7 @@ export function fetchDetailedActivity(accessToken: string, activityId: string): 
   });
 }
 
-export function transformStravaDetailedActivity(stravaDetailedActivity: StravaNativeDetailedActivity): StravatronDetailedActivity {
+export function transformStravaDetailedActivity(stravaDetailedActivity: StravaNativeDetailedActivity): StravatronActivity {
 
   const segmentEfforts: StravatronSegmentEffort[] = [];
 
@@ -195,7 +195,7 @@ export function transformStravaDetailedActivity(stravaDetailedActivity: StravaNa
 
   // // TEDTODO - create method for assigning based activity members and use that here and for
   // // summary activities
-  const detailedActivity: StravatronDetailedActivity = {
+  const detailedActivity: StravatronActivity = {
     id: stravaDetailedActivity.id,
     athleteId: stravaDetailedActivity.athlete.id,
     averageSpeed: stravaDetailedActivity.average_speed,

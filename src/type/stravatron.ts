@@ -129,22 +129,17 @@ export interface StravatronSummaryActivity {
   weightedAverageWatts?: number;
 }
 
-export interface StravatronDetailedActivity extends StravatronSummaryActivity {
-
-  calories: number;
-  description: string;
-  deviceName: string;
-  segmentEfforts: StravatronSegmentEffort[];
-
+export interface StravatronActivity extends StravatronSummaryActivity {
+  calories?: number;
+  description?: string;
+  deviceName?: string;
+  segmentEfforts?: StravatronSegmentEffort[];
   bestEfforts?: any; // DetailedSegmentEffort or DetailedSegmentEffort[] ??
-
-  // TEDTODO - not sure these are ever used in this interface
   normalizedPower?: number;
   intensityFactor?: number;
   trainingStressScore?: number;
 }
 
-// detailsLoaded?
 export interface StravatronDetailedActivityAttributes {
   achievementCount: number;
   athleteId: number;
