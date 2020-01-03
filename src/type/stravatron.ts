@@ -6,7 +6,7 @@ import {
 export type StravatronSegmentEffortsForSegment = StravatronSegmentEffort[];
 
 export interface StravatronDetailedActivityData {
-  detailedActivityAttributes: StravatronDetailedActivityAttributes;
+  detailedActivityAttributes: StravatronActivity;
   allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
   streams: StravatronActivityStreams;
   segments: StravatronDetailedSegment[];
@@ -100,6 +100,7 @@ export interface StravatronSummaryActivity {
   averageWatts?: number;
   city?: string;
   country: string;
+  detailsLoaded: boolean;
   deviceWatts?: boolean;
   distance: number;
   elapsedTime: number;
@@ -133,7 +134,7 @@ export interface StravatronActivity extends StravatronSummaryActivity {
   calories?: number;
   description?: string;
   deviceName?: string;
-  segmentEfforts?: StravatronSegmentEffort[];
+  // segmentEfforts?: StravatronSegmentEffort[];
   bestEfforts?: any; // DetailedSegmentEffort or DetailedSegmentEffort[] ??
   normalizedPower?: number;
   intensityFactor?: number;

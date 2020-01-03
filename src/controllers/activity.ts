@@ -6,7 +6,6 @@ import { Document } from 'mongoose';
 import { fetchSummaryActivities, retrieveAccessToken, fetchDetailedActivity } from '../controllers';
 import {
   StravatronSegmentEffort,
-  StravatronDetailedActivityAttributes,
   StravatronActivityStreams,
   StravatronStream,
   StravatronDetailedSegment,
@@ -148,13 +147,13 @@ function getActivitiesFromDb(): Promise<StravatronActivity[]> {
   });
 }
 
-function getActivityAttributes(activityId: number): Promise<StravatronDetailedActivityAttributes> {
+function getActivityAttributes(activityId: number): Promise<StravatronActivity> {
   const query = Activity.find({ id: activityId });
   const promise: Promise<Document[]> = query.exec();
   return promise.then((activityDocs: Document[]) => {
     if (isArray(activityDocs) && activityDocs.length === 1) {
       const activityDoc: Document = activityDocs[0];
-      const activityAttributes: StravatronDetailedActivityAttributes = activityDoc.toObject();
+      const activityAttributes: StravatronActivity = activityDoc.toObject();
       return Promise.resolve(activityAttributes);
     }
     return Promise.resolve(null);
@@ -219,7 +218,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
 
   // check to see if this activity already exists in the db as a detailed activity
   return getActivityAttributes(Number(activityId))
-    .then((activityAttributes: StravatronDetailedActivityAttributes) => {
+    .then((activityAttributes: StravatronActivity) => {
       if (!isNil(activityAttributes) && activityAttributes.detailsLoaded) {
         // load data from db
         return getActivitySegmentEffortsFromDb(Number(activityId))
@@ -245,10 +244,10 @@ export function getDetailedActivity(request: Request, response: Response): Promi
           });
       }
       else {
-        // fetch activity from strrava
+        // fetch activity from strava
         let accessToken: any;
         let detailedActivity: StravatronActivity;
-        let detailedActivityAttributes: StravatronDetailedActivityAttributes;
+        let detailedActivityAttributes: StravatronActivity;
 
         return retrieveAccessToken()
 
@@ -540,17 +539,17 @@ function getSegmentEffortsForSegmentFromDb(segmentId: number): Promise<Stravatro
 }
 
 // get segment effort for the current activity and add it to the db
-function addActivitySegmentEffortToDb(detailedActivity: StravatronActivity, segmentId: number): Promise<StravatronSegmentEffort> {
-  for (const segmentEffort of detailedActivity.segmentEfforts) {
-    if (segmentEffort.segmentId === segmentId) {
-      return addSegmentEffortsToDb([segmentEffort])
-        .then(() => {
-          return Promise.resolve(segmentEffort);
-        });
-    }
-  }
-  return Promise.reject();
-}
+// function addActivitySegmentEffortToDb(detailedActivity: StravatronActivity, segmentId: number): Promise<StravatronSegmentEffort> {
+//   for (const segmentEffort of detailedActivity.segmentEfforts) {
+//     if (segmentEffort.segmentId === segmentId) {
+//       return addSegmentEffortsToDb([segmentEffort])
+//         .then(() => {
+//           return Promise.resolve(segmentEffort);
+//         });
+//     }
+//   }
+//   return Promise.reject();
+// }
 
 function getSegmentsFromStrava(accessToken: any, segmentIds: number[]): Promise<StravatronDetailedSegment[]> {
 
@@ -690,7 +689,7 @@ export function getStreamData(activityId: number, stravaStreams: StravatronStrea
   return streamData;
 }
 
-function addActivityDetailsToDb(detailedActivityAttributes: StravatronDetailedActivityAttributes): Promise<Document> {
+function addActivityDetailsToDb(detailedActivityAttributes: StravatronActivity): Promise<Document> {
   const conditions = { id: detailedActivityAttributes.id };
   const detailedAttributes: any = {
     detailsLoaded: true,
