@@ -1,8 +1,16 @@
-import { PowerData } from "../type";
+import { PowerData } from '../type';
 
 // https://medium.com/critical-powers/formulas-from-training-and-racing-with-a-power-meter-2a295c661b46
 export function getPowerData(ftp: number, startIndex: number, endIndex: number, time: any[], watts: any[]): PowerData {
 
+  // using a 30 second window - if there are fewer than that number of values, return 0's
+  if (endIndex - startIndex < 30) {
+    return {
+      normalizedPower: 0,
+      intensityFactor: 0,
+      trainingStressScore: 0,
+    };
+  }
   // for now, assume that the nth entry in watts represents the power reading at n seconds
   // if that turns out not to be true, use the values in time
   // that is, assume that time.length is duration of workout in seconds
