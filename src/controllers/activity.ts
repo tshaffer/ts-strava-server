@@ -245,25 +245,27 @@ export function reloadEfforts(request: Request, response: Response): Promise<any
 
     }).then((segmentIdsRet: number[]) => {
 
-      // 12 segmentIds returned - expected
+      segmentIds = segmentIdsRet;
+
+      return getSegments(accessToken, segmentIdsRet);
+
+    }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
+
+      segments = detailedSegmentsRet;
+
+      const athleteId = '2843574';            // pa
+      // const athleteId = '7085811';         // ma
+
+      return getAllEffortsForAllSegments(accessToken, athleteId, true, segments);
+
+    }).then((allEffortsForSegmentsInCurrentActivity) => {
+
+      allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
+
+      console.log('allSegmentEffortsForSegmentsInActivity');
+      console.log(allSegmentEffortsForSegmentsInActivity);
+      
       return Promise.resolve();
-    //   segmentIds = segmentIdsRet;
-
-    //   // get the segments that are in the database already and fetch the
-    //   // segments that are not in the database from strava (and add them to the db)
-    //   return getSegments(accessToken, segmentIdsRet);
-
-    // }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
-
-    //   segments = detailedSegmentsRet;
-
-    //   const athleteId = '2843574';            // pa
-    //   // const athleteId = '7085811';         // ma
-
-    //   return getAllEffortsForAllSegments(accessToken, athleteId, activity, segments);
-    // }).then((allEffortsForSegmentsInCurrentActivity) => {
-    //   allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
-    //   return Promise.resolve();
     });
 }
 
@@ -352,7 +354,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
             const athleteId = '2843574';            // pa
             // const athleteId = '7085811';         // ma
 
-            return getAllEffortsForAllSegments(accessToken, athleteId, detailedActivity, segments);
+            return getAllEffortsForAllSegments(accessToken, athleteId, false, segments);
 
           }).then((allEffortsForSegmentsInCurrentActivity) => {
 
@@ -406,7 +408,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
     });
 }
 
-function getAllEffortsForAllSegments(accessToken: any, athleteId: string, detailedActivity: StravatronActivity, segments: StravatronDetailedSegment[]): Promise<StravatronSegmentEffortsForSegment[]> {
+function getAllEffortsForAllSegments(accessToken: any, athleteId: string, forceReload: boolean, segments: StravatronDetailedSegment[]): Promise<StravatronSegmentEffortsForSegment[]> {
 
   const allEffortsForSegmentsInCurrentActivity: StravatronSegmentEffortsForSegment[] = [];
   let segmentEffortsForSegment: StravatronSegmentEffortsForSegment;
@@ -421,7 +423,7 @@ function getAllEffortsForAllSegments(accessToken: any, athleteId: string, detail
 
     // see if all prior efforts for this segment have already been retrieved
     // THIS ONLY WORKS IF THIS CODE IS NOT CALLED WHEN THE ACTIVITY HAS ALREADY BEEN LOADED / VIEWED
-    if (!isNil(segment.allEffortsLoaded) && segment.allEffortsLoaded) {
+    if (!isNil(segment.allEffortsLoaded) && segment.allEffortsLoaded && !forceReload) {
       console.log('allEffortsLoaded for segment: ', segment.id);
       return getSegmentEffortsForSegmentFromDb(segment.id)
         .then((segmentEffortsForSegmentRet: StravatronSegmentEffortsForSegment) => {
