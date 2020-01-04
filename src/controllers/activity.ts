@@ -16,6 +16,7 @@ import {
   ZwiftSegmentSpec,
   PowerData,
   StravatronActivity,
+  StravaNativeDetailedSegmentEffort,
 } from '../type';
 import { fetchStreams, fetchSegment, fetchAllEfforts, transformStravaDetailedActivity } from './strava';
 import Activity from '../models/Activity';
@@ -215,7 +216,7 @@ export function reloadEfforts(request: Request, response: Response): Promise<any
   let accessToken: string;
 
   const activityId: string = request.params.id;
-  let activity: StravatronActivity;
+  // let activity: StravatronActivity;
   let segmentIds: number[] = [];
   let segments: StravatronDetailedSegment[];
   let allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
@@ -223,21 +224,12 @@ export function reloadEfforts(request: Request, response: Response): Promise<any
   return retrieveAccessToken()
     .then((accessTokenRet: any) => {
       accessToken = accessTokenRet;
-      return getActivityAttributes(Number(activityId));
-    }).then((activityRet: StravatronActivity) => {
-      activity = activityRet;
-      if (isNil(activity) || !activity.detailsLoaded) {
-        return Promise.reject('Activity not found in db');
-      }
-      // instead of doing the following, actually get all the segment ids from the activity
-      // this may require going back to strava to refetch the activity.
-
-      return getActivitySegmentEffortsFromDb(Number(activityId));
-    }).then((segmentEfforts: StravatronSegmentEffort[]) => {
-      segmentIds = segmentEfforts.map((segmentEffort) => {
-        return segmentEffort.segmentId;
+      return fetchDetailedActivity(accessToken, activityId);
+    }).then((nativeDetailedActivity: StravaNativeDetailedActivity) => {
+      segmentIds = nativeDetailedActivity.segment_efforts.map((nativeDetailedSegmentEffort: StravaNativeDetailedSegmentEffort) => {
+        return nativeDetailedSegmentEffort.segment.id;
       });
-      if (activity.type === 'VirtualRide') {
+      if (nativeDetailedActivity.type === 'VirtualRide') {
         return getZwiftSegmentIds()
           .then((zwiftSegmentIds: number[]) => {
             const zwiftSegmentIdsInActivity: number[] = segmentIds.filter((value, index, arr) => {
@@ -253,23 +245,25 @@ export function reloadEfforts(request: Request, response: Response): Promise<any
 
     }).then((segmentIdsRet: number[]) => {
 
-      segmentIds = segmentIdsRet;
-
-      // get the segments that are in the database already and fetch the
-      // segments that are not in the database from strava (and add them to the db)
-      return getSegments(accessToken, segmentIdsRet);
-
-    }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
-
-      segments = detailedSegmentsRet;
-
-      const athleteId = '2843574';            // pa
-      // const athleteId = '7085811';         // ma
-
-      return getAllEffortsForAllSegments(accessToken, athleteId, activity, segments);
-    }).then((allEffortsForSegmentsInCurrentActivity) => {
-      allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
+      // 12 segmentIds returned - expected
       return Promise.resolve();
+    //   segmentIds = segmentIdsRet;
+
+    //   // get the segments that are in the database already and fetch the
+    //   // segments that are not in the database from strava (and add them to the db)
+    //   return getSegments(accessToken, segmentIdsRet);
+
+    // }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
+
+    //   segments = detailedSegmentsRet;
+
+    //   const athleteId = '2843574';            // pa
+    //   // const athleteId = '7085811';         // ma
+
+    //   return getAllEffortsForAllSegments(accessToken, athleteId, activity, segments);
+    // }).then((allEffortsForSegmentsInCurrentActivity) => {
+    //   allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
+    //   return Promise.resolve();
     });
 }
 
