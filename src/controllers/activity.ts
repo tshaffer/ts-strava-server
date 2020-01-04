@@ -261,11 +261,25 @@ export function reloadEfforts(request: Request, response: Response): Promise<any
     }).then((allEffortsForSegmentsInCurrentActivity) => {
 
       allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
+      return getStreamDataFromDb(Number(activityId));
 
-      console.log('allSegmentEffortsForSegmentsInActivity');
-      console.log(allSegmentEffortsForSegmentsInActivity);
-      
-      return Promise.resolve();
+    }).then((stravatronStreamData: StravatronActivityStreams) => {
+
+      // TEDTODO - note that this code is currently only updating the power data for the segment efforts for the current activity
+      for (const segmentEffort of allSegmentEffortsForSegmentsInActivity) {
+        if (segmentEffort.activityId === Number(activityId) && !isNil(segmentEffort.startIndex) && !isNil(segmentEffort.endIndex)) {
+          const segmentEffortPowerData: PowerData = getPowerData(181, segmentEffort.startIndex, segmentEffort.endIndex, stravatronStreamData.time, stravatronStreamData.watts);
+          segmentEffort.normalizedPower = segmentEffortPowerData.normalizedPower;
+          segmentEffort.intensityFactor = segmentEffortPowerData.intensityFactor;
+          segmentEffort.trainingStressScore = segmentEffort.trainingStressScore;
+          addSegmentEffortPowerToDb(segmentEffort.id, segmentEffortPowerData.normalizedPower, segmentEffortPowerData.intensityFactor, segmentEffortPowerData.trainingStressScore)
+            .then((segmentEffortDoc) => {
+              console.log('addSegmentEffortPower promised resolved:');
+              console.log(segmentEffortDoc);
+            });
+        }
+      }
+      response.json(allSegmentEffortsForSegmentsInActivity);
     });
 }
 
@@ -377,7 +391,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
             for (const segmentEffort of allSegmentEffortsForSegmentsInActivity) {
               if (segmentEffort.activityId === detailedActivity.id && !isNil(segmentEffort.startIndex) && !isNil(segmentEffort.endIndex)) {
                 const segmentEffortPowerData: PowerData = getPowerData(181, segmentEffort.startIndex, segmentEffort.endIndex, stravatronStreamData.time, stravatronStreamData.watts);
-                addSegmentEffortPower(segmentEffort.id, segmentEffortPowerData.normalizedPower, segmentEffortPowerData.intensityFactor, segmentEffortPowerData.trainingStressScore)
+                addSegmentEffortPowerToDb(segmentEffort.id, segmentEffortPowerData.normalizedPower, segmentEffortPowerData.intensityFactor, segmentEffortPowerData.trainingStressScore)
                   .then((segmentEffortDoc) => {
                     console.log('addSegmentEffortPower promised resolved:');
                     console.log(segmentEffortDoc);
@@ -468,7 +482,7 @@ function setSegmentEffortsLoaded(segmentId: number): Promise<Document> {
     });
 }
 
-function addSegmentEffortPower(
+function addSegmentEffortPowerToDb(
   segmentEffortId: number, normalizedPower: number, intensityFactor: number, trainingStressScore: number): Promise<Document> {
   const conditions = { id: segmentEffortId };
   const query = SegmentEffort.findOneAndUpdate(conditions, {
@@ -751,7 +765,17 @@ function addSegmentEffortsToDb(segmentEfforts: StravatronSegmentEffort[]): Promi
     {
       ordered: false,
     },
-  );
+  ).then(() => {
+    return Promise.resolve();
+  }).catch((err: any) => {
+    if (!isNil(err.code) && err.code === 11000) {
+      console.log('addSegmentsToDb: duplicate key error');
+      return Promise.resolve();
+    }
+    else {
+      throw (err);
+    }
+  });
 }
 
 function addStreamsToDb(activityStreams: StravatronActivityStreams): Promise<Document | void> {
