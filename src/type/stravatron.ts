@@ -134,59 +134,10 @@ export interface StravatronActivity extends StravatronSummaryActivity {
   calories?: number;
   description?: string;
   deviceName?: string;
-  // segmentEfforts?: StravatronSegmentEffort[];
   bestEfforts?: any; // DetailedSegmentEffort or DetailedSegmentEffort[] ??
   normalizedPower?: number;
   intensityFactor?: number;
   trainingStressScore?: number;
-}
-
-export interface StravatronDetailedActivityAttributes {
-  achievementCount: number;
-  athleteId: number;
-  averageCadence: number;
-  averageHeartrate: number;
-  averageSpeed: number;
-  averageTemp?: number;
-  averageWatts?: number;
-  bestEfforts?: any; // DetailedSegmentEffort or DetailedSegmentEffort[] ??
-  calories: number;
-  city?: string;
-  country: string;
-  description: string;
-  detailsLoaded: boolean;
-  deviceName: string;
-  deviceWatts?: boolean;
-  distance: number;
-  elapsedTime: number;
-  elevHigh?: number;
-  elevLow?: number;
-  endLatlng: StravaNativeLatLng;
-  hasHeartrate: boolean;
-  id: number;
-  intensityFactor?: number;
-  kilojoules?: number;
-  map: StravaNativePolylineMap; // does not include polyline
-  maxHeartrate: number;
-  maxSpeed: number;
-  maxWatts: number;
-  movingTime: number;
-  name: string;
-  normalizedPower?: number;
-  prCount: number;
-  resourceState: number;
-  startDate: Date;
-  startDateLocal: Date;
-  startLatitude: number;
-  startLatlng: StravaNativeLatLng;
-  startLongitude: number;
-  state?: string;
-  timezone: string;
-  totalElevationGain: number;
-  trainingStressScore?: number;
-  type: string;
-  utcOffset: number;
-  weightedAverageWatts?: number;
 }
 
 export interface ZwiftSegmentSpec {

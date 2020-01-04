@@ -25,6 +25,7 @@ import ActivityStreams from '../models/ActivityStreams';
 import AppVariables from '../models/AppVariables';
 import ZwiftSegment from '../models/ZwiftSegment';
 import { getPowerData } from '../utilities';
+import { rejects } from 'assert';
 
 interface DbSegmentData {
   segmentIdsNotInDb: number[];
@@ -208,6 +209,70 @@ function getSegmentsFromDb(segmentIds: number[]): Promise<StravatronDetailedSegm
   });
 }
 
+// force reload efforts for an activity
+export function reloadEfforts(request: Request, response: Response): Promise<any> {
+
+  let accessToken: string;
+
+  const activityId: string = request.params.id;
+  let activity: StravatronActivity;
+  let segmentIds: number[] = [];
+  let segments: StravatronDetailedSegment[];
+  let allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
+
+  return retrieveAccessToken()
+    .then((accessTokenRet: any) => {
+      accessToken = accessTokenRet;
+      return getActivityAttributes(Number(activityId));
+    }).then((activityRet: StravatronActivity) => {
+      activity = activityRet;
+      if (isNil(activity) || !activity.detailsLoaded) {
+        return Promise.reject('Activity not found in db');
+      }
+      // instead of doing the following, actually get all the segment ids from the activity
+      // this may require going back to strava to refetch the activity.
+
+      return getActivitySegmentEffortsFromDb(Number(activityId));
+    }).then((segmentEfforts: StravatronSegmentEffort[]) => {
+      segmentIds = segmentEfforts.map((segmentEffort) => {
+        return segmentEffort.segmentId;
+      });
+      if (activity.type === 'VirtualRide') {
+        return getZwiftSegmentIds()
+          .then((zwiftSegmentIds: number[]) => {
+            const zwiftSegmentIdsInActivity: number[] = segmentIds.filter((value, index, arr) => {
+              return zwiftSegmentIds.indexOf(value) > 0;
+            });
+            console.log(zwiftSegmentIdsInActivity);
+            return Promise.resolve(zwiftSegmentIdsInActivity);
+          });
+      }
+      else {
+        return Promise.resolve(segmentIds);
+      }
+
+    }).then((segmentIdsRet: number[]) => {
+
+      segmentIds = segmentIdsRet;
+
+      // get the segments that are in the database already and fetch the
+      // segments that are not in the database from strava (and add them to the db)
+      return getSegments(accessToken, segmentIdsRet);
+
+    }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
+
+      segments = detailedSegmentsRet;
+
+      const athleteId = '2843574';            // pa
+      // const athleteId = '7085811';         // ma
+
+      return getAllEffortsForAllSegments(accessToken, athleteId, activity, segments);
+    }).then((allEffortsForSegmentsInCurrentActivity) => {
+      allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
+      return Promise.resolve();
+    });
+}
+
 // detailed activity
 export function getDetailedActivity(request: Request, response: Response): Promise<any> {
 
@@ -247,7 +312,6 @@ export function getDetailedActivity(request: Request, response: Response): Promi
         // fetch activity from strava
         let accessToken: any;
         let detailedActivity: StravatronActivity;
-        let detailedActivityAttributes: StravatronActivity;
 
         return retrieveAccessToken()
 
@@ -329,59 +393,12 @@ export function getDetailedActivity(request: Request, response: Response): Promi
             addStreamsToDb(stravatronStreamData)
               .then(() => {
 
-                // TEDTODO - put elsewhere
-                detailedActivityAttributes =
-                {
-                  achievementCount: detailedActivity.achievementCount,
-                  athleteId: detailedActivity.athleteId,
-                  averageSpeed: detailedActivity.averageSpeed,
-                  averageTemp: detailedActivity.averageTemp,
-                  averageWatts: detailedActivity.averageWatts,
-                  detailsLoaded: false,
-                  deviceWatts: detailedActivity.deviceWatts,
-                  distance: detailedActivity.distance,
-                  elapsedTime: detailedActivity.elapsedTime,
-                  elevHigh: detailedActivity.elevHigh,
-                  elevLow: detailedActivity.elevLow,
-                  endLatlng: detailedActivity.endLatlng,
-                  id: detailedActivity.id,
-                  kilojoules: detailedActivity.kilojoules,
-                  city: detailedActivity.city,
-                  country: detailedActivity.country,
-                  map: detailedActivity.map,
-                  maxSpeed: detailedActivity.maxSpeed,
-                  movingTime: detailedActivity.movingTime,
-                  name: detailedActivity.name,
-                  prCount: detailedActivity.prCount,
-                  resourceState: detailedActivity.resourceState,
-                  startDate: detailedActivity.startDate,
-                  startDateLocal: detailedActivity.startDateLocal,
-                  startLatitude: detailedActivity.startLatitude,
-                  startLatlng: detailedActivity.startLatlng,
-                  startLongitude: detailedActivity.startLongitude,
-                  timezone: detailedActivity.timezone,
-                  totalElevationGain: detailedActivity.totalElevationGain,
-                  weightedAverageWatts: detailedActivity.weightedAverageWatts,
-                  description: detailedActivity.description,
-                  calories: detailedActivity.calories,
-                  averageCadence: detailedActivity.averageCadence,
-                  averageHeartrate: detailedActivity.averageHeartrate,
-                  deviceName: detailedActivity.deviceName,
-                  hasHeartrate: detailedActivity.hasHeartrate,
-                  maxHeartrate: detailedActivity.maxHeartrate,
-                  maxWatts: detailedActivity.maxWatts,
-                  type: detailedActivity.type,
-                  utcOffset: detailedActivity.utcOffset,
-                  bestEfforts: detailedActivity.bestEfforts,
-                  normalizedPower: ridePowerData.normalizedPower,
-                  intensityFactor: ridePowerData.intensityFactor,
-                  trainingStressScore: ridePowerData.trainingStressScore,
-                };
+                detailedActivity.detailsLoaded = false;
 
                 // merge this detailed activity data with the existing summary activity data
-                return addActivityDetailsToDb(detailedActivityAttributes).then(() => {
+                return addActivityDetailsToDb(detailedActivity).then(() => {
                   const detailedActivityData: StravatronDetailedActivityData = {
-                    detailedActivityAttributes,
+                    detailedActivityAttributes: detailedActivity,
                     streams: stravatronStreamData,
                     segments,
                     allSegmentEffortsForSegmentsInActivity,
@@ -576,45 +593,9 @@ function getSegmentsFromStrava(accessToken: any, segmentIds: number[]): Promise<
 function getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity: StravatronSegmentEffortsForSegment[]): StravatronSegmentEffort[] {
 
   const segmentEffortsInActivity: StravatronSegmentEffort[] = [];
-
   for (const allEffortsForSegment of allEffortsForSegmentsInCurrentActivity) {
-    // convert to stravatron segmentEfforts
     for (const effortForSegment of allEffortsForSegment) {
-
-      const achievements: any[] = [];
-      for (const achievement of effortForSegment.achievements) {
-        achievements.push({
-          rank: achievement.rank,
-          type: achievement.achievementType,
-          typeId: achievement.typeId,
-        });
-      }
-
-      const stravatronSegmentEffort: StravatronSegmentEffort = {
-        id: effortForSegment.id,
-        segmentId: effortForSegment.segmentId,
-        name: effortForSegment.name,
-        activityId: effortForSegment.activityId,
-        elapsedTime: effortForSegment.elapsedTime,
-        movingTime: effortForSegment.movingTime,
-        startDateLocal: effortForSegment.startDateLocal,
-        distance: effortForSegment.distance,
-        averageWatts: effortForSegment.averageWatts,
-        prRank: effortForSegment.prRank,
-        achievements,
-        averageCadence: effortForSegment.averageCadence,
-        averageHeartrate: effortForSegment.averageHeartrate,
-        deviceWatts: effortForSegment.deviceWatts,
-        maxHeartrate: effortForSegment.maxHeartrate,
-        startDate: effortForSegment.startDate,
-        startIndex: effortForSegment.startIndex,
-        endIndex: effortForSegment.endIndex,
-        normalizedPower: effortForSegment.normalizedPower,
-        intensityFactor: effortForSegment.intensityFactor,
-        trainingStressScore: effortForSegment.trainingStressScore,
-      };
-
-      segmentEffortsInActivity.push(stravatronSegmentEffort);
+      segmentEffortsInActivity.push(effortForSegment);
     }
   }
   return segmentEffortsInActivity;
@@ -752,18 +733,18 @@ function addSegmentsToDb(detailedSegments: StravatronDetailedSegment[]): Promise
     {
       ordered: false,
     },
-    ).then(() => {
+  ).then(() => {
+    return Promise.resolve();
+  }).catch((err: any) => {
+    if (!isNil(err.code) && err.code === 11000) {
+      console.log('addSegmentsToDb: duplicate key error');
       return Promise.resolve();
-    }).catch((err: any) => {
-      if (!isNil(err.code) && err.code === 11000) {
-        console.log('addSegmentsToDb: duplicate key error');
-        return Promise.resolve();
-      }
-      else {
-        throw (err);
-      }
-    });
-  }
+    }
+    else {
+      throw (err);
+    }
+  });
+}
 
 function addSegmentEffortsToDb(segmentEfforts: StravatronSegmentEffort[]): Promise<any> {
   if (segmentEfforts.length === 0) {

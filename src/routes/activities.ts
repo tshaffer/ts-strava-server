@@ -4,6 +4,7 @@ const activitiesRouter = express.Router();
 import { 
   getActivities,
   getDetailedActivity,
+  reloadEfforts,
   createActivity,
   createSummaryActivity,
   createSegment,
@@ -17,6 +18,7 @@ import {
 
 activitiesRouter.get('/activities', getActivities);
 activitiesRouter.get('/activity/:id', getDetailedActivity);
+activitiesRouter.get('/reloadEfforts/:id', reloadEfforts);
 
 // test endpoints
 activitiesRouter.post('/summaryActivity', createSummaryActivity);

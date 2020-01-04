@@ -75,19 +75,67 @@
     },
     {
       "name": "Fuego Flats Reverse Sprint",
-      "id": 0
+      "id": 20350066
     },
     {
       "name": "Fuego Flats Forward Sprint",
-      "id": 0
+      "id": 20350107
     },
     {
       "name": "Tempus Fugit",
-      "id": 0
+      "id": 20350088
     },
     {
       "name": "Flat Test",
-      "id": 0
+      "id": 22186429
+    },
+    {
+      "name": "First 11 hairpins",
+      "id": 17265832
+    },
+    {
+      "name": "19 to 18",
+      "id": 19983404
+    },
+    {
+      "name": "Base to #10",
+      "id": 18385727
+    },
+    {
+      "name": "Alpe du Zwift Start to Bend 21",
+      "id": 17329459
+    },
+    {
+      "name": "Alpe du Zwift Bend 21 to 20",
+      "id": 17329478
+    },
+    {
+      "name": "Alpe du Zwift Bend 18 to 17",
+      "id": 17329518
+    },
+    {
+      "name": "Alpe du Zwift Bend 16 to Bend 15",
+      "id": 17329535
+    },
+    {
+      "name": "Alpe du Zwift Bend 15 to Bend 14",
+      "id": 17329554
+    },
+    {
+      "name": "Alpe du Zwift Bend 14 to Bend 13",
+      "id": 17329604
+    },
+    {
+      "name": "Alpe du Zwift Bend 13 to Bend 12",
+      "id": 17329612
+    },
+    {
+      "name": "Alpe du Zwift Bend 12 to Bend 11",
+      "id": 17329631
+    },
+    {
+      "name": "Alpe du Zwift Bend 11 to Bend 10",
+      "id": 17329641
     }
   ]
 }
