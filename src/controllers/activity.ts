@@ -26,7 +26,6 @@ import ActivityStreams from '../models/ActivityStreams';
 import AppVariables from '../models/AppVariables';
 import ZwiftSegment from '../models/ZwiftSegment';
 import { getPowerData } from '../utilities';
-import { rejects } from 'assert';
 
 interface DbSegmentData {
   segmentIdsNotInDb: number[];
@@ -404,6 +403,9 @@ export function getDetailedActivity(request: Request, response: Response): Promi
               .then(() => {
 
                 detailedActivity.detailsLoaded = false;
+                detailedActivity.normalizedPower = ridePowerData.normalizedPower;
+                detailedActivity.intensityFactor = ridePowerData.intensityFactor;
+                detailedActivity.trainingStressScore = ridePowerData.trainingStressScore;
 
                 // merge this detailed activity data with the existing summary activity data
                 return addActivityDetailsToDb(detailedActivity).then(() => {
