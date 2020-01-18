@@ -25,7 +25,7 @@ import SegmentEffort from '../models/SegmentEffort';
 import ActivityStreams from '../models/ActivityStreams';
 import AppVariables from '../models/AppVariables';
 import ZwiftSegment from '../models/ZwiftSegment';
-import { getPowerData } from '../utilities';
+import { getPowerData, getMmpData } from '../utilities';
 
 interface DbSegmentData {
   segmentIdsNotInDb: number[];
@@ -207,6 +207,18 @@ function getSegmentsFromDb(segmentIds: number[]): Promise<StravatronDetailedSegm
     }
     return Promise.resolve([]);
   });
+}
+
+export function getMeanMaximalPowerData(request: Request, response: Response): Promise<any> {
+
+  const activityId: string = request.params.id;
+
+  return getStreamDataFromDb(Number(activityId))
+    .then( (streams: StravatronActivityStreams) => {
+      const watts: number[] = streams.watts;
+      getMmpData(watts);
+      return response.json({status: 'ok'});
+    });
 }
 
 // force reload efforts for an activity

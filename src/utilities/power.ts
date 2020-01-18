@@ -1,5 +1,26 @@
 import { PowerData } from '../type';
 
+export function getMmpData(watts: number[]) {
+
+  const numSamples = watts.length;
+
+  let duration = 5;
+  while (duration < watts.length) {
+
+    // array of all the average powers for duration in the entire ride
+    const averagePowersAtDuration: number[] = getRollingAverages(watts, 0, watts.length - 1, duration);
+
+    // get maximum average power in this ride at this duration
+    const maxAveragePowerAtDuration = averagePowersAtDuration.reduce((a, b) => {
+      return Math.max(a, b);
+    });
+
+    // console.log('Maximum power at ' + duration + ' is ' + maxAveragePowerAtDuration + ' watts.');
+
+    duration++;
+  }
+}
+
 // https://medium.com/critical-powers/formulas-from-training-and-racing-with-a-power-meter-2a295c661b46
 export function getPowerData(ftp: number, startIndex: number, endIndex: number, time: any[], watts: any[]): PowerData {
 
