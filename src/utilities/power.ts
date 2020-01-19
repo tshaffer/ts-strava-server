@@ -8,8 +8,6 @@ export function getMmpData(watts: number[]) {
 
   const numSamples = watts.length;
 
-  // let loopCounter = 0;
-
   let duration = 5;
   while (duration < numSamples) {
 
@@ -17,34 +15,17 @@ export function getMmpData(watts: number[]) {
     const averagePowersAtDuration: number[] = getRollingAverages(watts, 0, numSamples - 1, duration);
 
     // get maximum average power in this ride at this duration
-    let indexOfMaximumValueForDuration = 0;
+    // let indexOfMaximumValueForDuration = 0;
     const maxAveragePowerAtDuration = averagePowersAtDuration.reduce((accumulator, currentValue, currentIndex) => {
-        if (currentValue > accumulator) {
-          indexOfMaximumValueForDuration = currentIndex;
-        }
+        // if (currentValue > accumulator) {
+        //   indexOfMaximumValueForDuration = currentIndex;
+        // }
       return Math.max(accumulator, currentValue);
     });
     maxPowerAtDurations.push(maxAveragePowerAtDuration);
 
-    // if (loopCounter === 0) {
-    //   console.log('Maximum power for a ' + duration + ' second effort is ' + maxAveragePowerAtDuration + ' watts, starting at an elapsed time of ' + indexOfMaximumValueForDuration.toString() + ' seconds');
-    // }
-    // loopCounter++;
-    // if (loopCounter >= 20) {
-    //   loopCounter = 0;
-    // }
-
     duration++;
   }
-
-  // const mmpDataPath = path.join(__dirname, '../../data/mmpData.csv');
-  // const mmpDataStream = fs.createWriteStream(mmpDataPath);
-  // console.log('begin write');
-  // maxPowerAtDurations.forEach((maxPowerAtDuration, index) => {
-  //   mmpDataStream.write((index + 5).toString + ',' + maxPowerAtDuration.toString() + '\n');
-  // });
-  // mmpDataStream.end();
-  // console.log('write complete');
 }
 
 // https://medium.com/critical-powers/formulas-from-training-and-racing-with-a-power-meter-2a295c661b46
