@@ -2,6 +2,14 @@
   "version": "0.0.1",
   "zwiftSegment": [
     {
+      "name": "Yorkshire KOM",
+      "id": 21747822
+    },
+    {
+      "name": "2019 UCI Worlds Harrogate Circuit (Banner to Banner)",
+      "id": 21738724
+    },
+    {
       "name": "Repack Ridge Mtb Trail",
       "id": 21955622
     },
@@ -26,12 +34,20 @@
       "id": 12118421
     },
     {
+      "name": "Figure 8 Forward 1 Lap from Start Pier (Zwift Insider verified)",
+      "id": 17671249
+    },
+    {
       "name": "Hilly Route",
       "id": 12118362
     },
     {
       "name": "Hilly KOM Forward",
       "id": 12109030
+    },
+    {
+      "name": "Hilly KOM Reverse",
+      "id": 12128029
     },
     {
       "name": "Sprint Forward",
@@ -192,6 +208,26 @@
     {
       "name": "Road to Sky",
       "id": 22280036
+    },
+    {
+      "name": "Innsbruckring",
+      "id": 18398895
+    },
+    {
+      "name": "Kleiner Hügel (Small Hill)",
+      "id": 18410562
+    },
+    {
+      "name": "Classique Reverse Leadin from Start Banner",
+      "id": 19480660
+    },
+    {
+      "name": "Flat Route Forward 1 Lap from Start Pier",
+      "id": 12381109
+    },
+    {
+      "name": "Flat Route",
+      "id": 12136784
     }
   ]
 }
