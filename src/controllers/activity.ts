@@ -209,30 +209,6 @@ function getSegmentsFromDb(segmentIds: number[]): Promise<StravatronDetailedSegm
   });
 }
 
-export function getMeanMaximalPowerData(request: Request, response: Response): Promise<any> {
-
-  const activityId: string = request.params.id;
-
-  return getStreamDataFromDb(Number(activityId))
-    .then( (streams: StravatronActivityStreams) => {
-
-      // for now, send the response now
-      response.json({status: 'ok'});
-
-      const watts: number[] = streams.watts;
-      const maxPowerAtDurations: number[] = getMmpData(watts);
-
-      const conditions = { activityId };
-      const query = ActivityStreams.findOneAndUpdate(conditions, { maxPowerAtDurations });
-      const promise: Promise<Document> = query.exec();
-      return promise
-        .then((retValue: any) => {
-          console.log('mmpPowerData added to db');
-          return Promise.resolve();
-        });
-    });
-}
-
 // force reload efforts for an activity
 export function reloadEfforts(request: Request, response: Response): Promise<any> {
 
@@ -818,3 +794,35 @@ function addStreamsToDb(activityStreams: StravatronActivityStreams): Promise<Doc
       }
     });
 }
+
+export function getMeanMaximalPowerData(request: Request, response: Response): Promise<any> {
+
+  const activityId: string = request.params.id;
+
+  return getStreamDataFromDb(Number(activityId))
+    .then( (streams: StravatronActivityStreams) => {
+
+      // for now, send the response now
+      response.json({status: 'ok'});
+
+      const watts: number[] = streams.watts;
+      const maxPowerAtDurations: number[] = getMmpData(watts);
+
+      const conditions = { activityId };
+      const query = ActivityStreams.findOneAndUpdate(conditions, { maxPowerAtDurations });
+      const promise: Promise<Document> = query.exec();
+      return promise
+        .then((retValue: any) => {
+          console.log('mmpPowerData added to db');
+          return Promise.resolve();
+        });
+    });
+}
+
+export function getAllMaximalPowerData(request: Request, response: Response): Promise<any> {
+  console.log('getAllMeanMaximalPowerData');
+  response.json({status: 'ok'});
+  return Promise.resolve();
+}
+
+

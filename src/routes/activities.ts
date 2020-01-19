@@ -15,12 +15,14 @@ import {
   getStravaSegment,
   insertZwiftSegments,
   getMeanMaximalPowerData,
+  getAllMaximalPowerData,
  } from '../controllers';
 
 activitiesRouter.get('/activities', getActivities);
 activitiesRouter.get('/activity/:id', getDetailedActivity);
 activitiesRouter.get('/reloadEfforts/:id', reloadEfforts);
 activitiesRouter.get('/meanMaximalPowerData/:id', getMeanMaximalPowerData);
+activitiesRouter.get('/allMaximalPowerData', getAllMaximalPowerData);
 
 // test endpoints
 activitiesRouter.post('/summaryActivity', createSummaryActivity);
