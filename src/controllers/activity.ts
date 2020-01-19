@@ -215,9 +215,21 @@ export function getMeanMaximalPowerData(request: Request, response: Response): P
 
   return getStreamDataFromDb(Number(activityId))
     .then( (streams: StravatronActivityStreams) => {
+
+      // for now, send the response now
+      response.json({status: 'ok'});
+
       const watts: number[] = streams.watts;
-      getMmpData(watts);
-      return response.json({status: 'ok'});
+      const maxPowerAtDurations: number[] = getMmpData(watts);
+
+      const conditions = { activityId };
+      const query = ActivityStreams.findOneAndUpdate(conditions, { maxPowerAtDurations });
+      const promise: Promise<Document> = query.exec();
+      return promise
+        .then((retValue: any) => {
+          console.log('mmpPowerData added to db');
+          return Promise.resolve();
+        });
     });
 }
 

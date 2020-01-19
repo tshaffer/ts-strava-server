@@ -13,6 +13,7 @@ const ActivityStreamsSchema = new Schema(
     cadence: { type: [Number], required: true },
     heartrate: { type: [Number], required: true },
     watts: { type: [Number], required: true },
+    maxPowerAtDurations: { type: [Number] },
   },
 );
 

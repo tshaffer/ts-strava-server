@@ -1,8 +1,6 @@
 import { PowerData } from '../type';
-import * as fs from 'fs';
-import * as path from 'path';
 
-export function getMmpData(watts: number[]) {
+export function getMmpData(watts: number[]): number[] {
 
   const maxPowerAtDurations: number[] = [];
 
@@ -26,6 +24,8 @@ export function getMmpData(watts: number[]) {
 
     duration++;
   }
+
+  return maxPowerAtDurations;
 }
 
 // https://medium.com/critical-powers/formulas-from-training-and-racing-with-a-power-meter-2a295c661b46
