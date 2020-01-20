@@ -88,6 +88,7 @@ export interface StravatronActivityStreams {
   cadence: any[];
   heartrate: any[];
   watts: any[];
+  maxPowerAtDurations?: number[];
 }
 
 export interface StravatronSummaryActivity {

@@ -800,10 +800,10 @@ export function getMeanMaximalPowerData(request: Request, response: Response): P
   const activityId: string = request.params.id;
 
   return getStreamDataFromDb(Number(activityId))
-    .then( (streams: StravatronActivityStreams) => {
+    .then((streams: StravatronActivityStreams) => {
 
       // for now, send the response now
-      response.json({status: 'ok'});
+      response.json({ status: 'ok' });
 
       const watts: number[] = streams.watts;
       const maxPowerAtDurations: number[] = getMmpData(watts);
@@ -820,9 +820,55 @@ export function getMeanMaximalPowerData(request: Request, response: Response): P
 }
 
 export function getAllMaximalPowerData(request: Request, response: Response): Promise<any> {
+
   console.log('getAllMeanMaximalPowerData');
-  response.json({status: 'ok'});
-  return Promise.resolve();
+
+  const stravatronActivities: StravatronActivity[] = [];
+
+  return getActivitiesFromDb()
+    .then((dbActivities: StravatronActivity[]) => {
+      response.json({ status: 'ok' });
+
+      for (const stravatronActivity of dbActivities) {
+        if (stravatronActivity.detailsLoaded) {
+          stravatronActivities.push(stravatronActivity);
+        }
+        else {
+          const activityName = stravatronActivity.name;
+          console.log('Details not loaded for activity: ' + activityName);
+        }
+      }
+
+      return getMmpStreamsForActivities(stravatronActivities)
+        .then((allMaxPowersAtDurations: any) => {
+          console.log('number of activities with mmpData');
+          console.log(allMaxPowersAtDurations.length);
+          return Promise.resolve();
+        });
+    });
 }
 
+function getMmpStreamsForActivities(activities: StravatronActivity[]): Promise<number[][]> {
+
+  const allMaxPowersAtDurations: number[][] = [];
+
+  const processNextActivity = (index: number): Promise<number[][]> => {
+
+    if (index >= activities.length) {
+      return Promise.resolve(allMaxPowersAtDurations);
+    }
+
+    const activity: StravatronActivity = activities[index];
+
+    return getStreamDataFromDb(Number(activity.id))
+      .then((streams: StravatronActivityStreams) => {
+        if (!isNil(streams) && !isNil(streams.maxPowerAtDurations) && streams.maxPowerAtDurations.length > 0) {
+          allMaxPowersAtDurations.push(streams.maxPowerAtDurations);
+        }
+        return processNextActivity(index + 1);
+      });
+  };
+
+  return processNextActivity(0);
+}
 
