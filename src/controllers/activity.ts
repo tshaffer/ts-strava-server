@@ -1,3 +1,6 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
 import { isNil, isArray } from 'lodash';
 
 import { Request, Response } from 'express';
@@ -839,23 +842,59 @@ export function getAllMaximalPowerData(request: Request, response: Response): Pr
         }
       }
 
-      return getMmpStreamsForActivities(stravatronActivities)
-        .then((allMaxPowersAtDurations: any) => {
-          console.log('number of activities with mmpData');
-          console.log(allMaxPowersAtDurations.length);
+      return getMmpDataForAllActivities(stravatronActivities)
+        .then((maxPowersAtDurations: any) => {
+          console.log('maxPowersAtDuration length: ' + maxPowersAtDurations.length);
+
+          const mmpDataPath = path.join(__dirname, '../../data/allMmpData.csv');
+          const mmpDataStream = fs.createWriteStream(mmpDataPath);
+          console.log('begin write');
+          maxPowersAtDurations.forEach((maxPowerAtDuration: number, index: number) => {
+            mmpDataStream.write((index + 5).toString() + ',' + maxPowerAtDuration.toString() + '\n');
+          });
+          mmpDataStream.end();
+          console.log('write complete');
+
           return Promise.resolve();
         });
     });
 }
 
-function getMmpStreamsForActivities(activities: StravatronActivity[]): Promise<number[][]> {
+// function getAllMmpStreamsForActivities(activities: StravatronActivity[]): Promise<number[][]> {
 
-  const allMaxPowersAtDurations: number[][] = [];
+//   const allMaxPowersAtDurations: number[][] = [];
 
-  const processNextActivity = (index: number): Promise<number[][]> => {
+//   const processNextActivity = (index: number): Promise<number[][]> => {
+
+//     if (index >= activities.length) {
+//       return Promise.resolve(allMaxPowersAtDurations);
+//     }
+
+//     const activity: StravatronActivity = activities[index];
+
+//     return getStreamDataFromDb(Number(activity.id))
+//       .then((streams: StravatronActivityStreams) => {
+//         if (!isNil(streams) && !isNil(streams.maxPowerAtDurations) && streams.maxPowerAtDurations.length > 0) {
+//           allMaxPowersAtDurations.push(streams.maxPowerAtDurations);
+//         }
+//         return processNextActivity(index + 1);
+//       });
+//   };
+
+//   return processNextActivity(0);
+// }
+
+function getMmpDataForAllActivities(activities: StravatronActivity[]): Promise<number[]> {
+
+  const maxPowersAtDurations: number[] = [];
+
+  const processNextActivity = (index: number): Promise<number[]> => {
+
+    console.log('processNextActivity, index: ' + index);
 
     if (index >= activities.length) {
-      return Promise.resolve(allMaxPowersAtDurations);
+      console.log(maxPowersAtDurations);
+      return Promise.resolve(maxPowersAtDurations);
     }
 
     const activity: StravatronActivity = activities[index];
@@ -863,12 +902,28 @@ function getMmpStreamsForActivities(activities: StravatronActivity[]): Promise<n
     return getStreamDataFromDb(Number(activity.id))
       .then((streams: StravatronActivityStreams) => {
         if (!isNil(streams) && !isNil(streams.maxPowerAtDurations) && streams.maxPowerAtDurations.length > 0) {
-          allMaxPowersAtDurations.push(streams.maxPowerAtDurations);
+          reduceMmpData(maxPowersAtDurations, streams.maxPowerAtDurations);
         }
         return processNextActivity(index + 1);
       });
   };
 
   return processNextActivity(0);
+}
+
+function reduceMmpData(currentMaxPowersAtDuration: number[], newMaxPowersAtDuration: number[]) {
+
+  let durationIndex = 0;
+  while (durationIndex < currentMaxPowersAtDuration.length || durationIndex < newMaxPowersAtDuration.length) {
+    if (durationIndex < currentMaxPowersAtDuration.length && durationIndex < newMaxPowersAtDuration.length) {
+      if (newMaxPowersAtDuration[durationIndex] > currentMaxPowersAtDuration[durationIndex]) {
+        currentMaxPowersAtDuration[durationIndex] = newMaxPowersAtDuration[durationIndex];
+      }
+    }
+    else if (durationIndex >= currentMaxPowersAtDuration.length) {
+      currentMaxPowersAtDuration.push(newMaxPowersAtDuration[durationIndex]);
+    }
+    durationIndex++;
+  }
 }
 
