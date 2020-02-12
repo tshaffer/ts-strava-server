@@ -292,6 +292,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
 
   let nativeDetailedActivity: StravaNativeDetailedActivity;
   let segmentIds: number[] = [];
+  let taggedSegmentIds: number[] = [];
   let segments: StravatronDetailedSegment[];
   let allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
 
@@ -359,7 +360,9 @@ export function getDetailedActivity(request: Request, response: Response): Promi
               return Promise.resolve(segmentIds);
             }
 
-          }).then((taggedSegmentIds: number[]) => {
+          }).then((tSegmentIds: number[]) => {
+
+            taggedSegmentIds = tSegmentIds;
 
             const taggedSegmentEfforts: StravatronSegmentEffort[] = [];
 
@@ -375,9 +378,15 @@ export function getDetailedActivity(request: Request, response: Response): Promi
             return addSegmentEffortsToDb(taggedSegmentEfforts);
 
           }).then(() => {
-            
+
+            return getSegmentEffortsForSegmentsFromDb(taggedSegmentIds);
+
+          }).then((allEffortsForSegmentsInCurrentActivity) => {
+
+            allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
+
             return fetchStreams(accessToken, activityId);
-          
+
           }).then((streams: StravatronStream[]) => {
 
             const stravatronStreamData: StravatronActivityStreams = getStreamData(detailedActivity.id, streams);
@@ -787,7 +796,7 @@ function addSegmentEffortsToDb(segmentEfforts: StravatronSegmentEffort[]): Promi
     return Promise.resolve();
   }).catch((err: any) => {
     if (!isNil(err.code) && err.code === 11000) {
-      console.log('addSegmentsToDb: duplicate key error');
+      console.log('addSegmentEffortsToDb: duplicate key error');
       return Promise.resolve();
     }
     else {
