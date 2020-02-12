@@ -288,7 +288,7 @@ export function fetchAllEfforts(accessToken: string, athleteId: string, segmentI
   });
 }
 
-function transformStravaDetailedSegmentEffort(stravaDetailedSegmentEffort: StravaNativeDetailedSegmentEffort): StravatronSegmentEffort {
+export function transformStravaDetailedSegmentEffort(stravaDetailedSegmentEffort: StravaNativeDetailedSegmentEffort): StravatronSegmentEffort {
 
   const nativeSummarySegment: StravaNativeSummarySegment = stravaDetailedSegmentEffort.segment;
 

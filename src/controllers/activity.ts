@@ -21,7 +21,7 @@ import {
   StravatronActivity,
   StravaNativeDetailedSegmentEffort,
 } from '../type';
-import { fetchStreams, fetchSegment, fetchAllEfforts, transformStravaDetailedActivity } from './strava';
+import { fetchStreams, fetchSegment, fetchAllEfforts, transformStravaDetailedActivity, transformStravaDetailedSegmentEffort } from './strava';
 import Activity from '../models/Activity';
 import Segment from '../models/Segment';
 import SegmentEffort from '../models/SegmentEffort';
@@ -289,6 +289,8 @@ export function reloadEfforts(request: Request, response: Response): Promise<any
 export function getDetailedActivity(request: Request, response: Response): Promise<any> {
 
   const activityId: string = request.params.id;
+
+  let nativeDetailedActivity: StravaNativeDetailedActivity;
   let segmentIds: number[] = [];
   let segments: StravatronDetailedSegment[];
   let allSegmentEffortsForSegmentsInActivity: StravatronSegmentEffort[];
@@ -332,7 +334,9 @@ export function getDetailedActivity(request: Request, response: Response): Promi
             accessToken = accessTokenRet;
             return fetchDetailedActivity(accessToken, activityId);
 
-          }).then((nativeDetailedActivity: StravaNativeDetailedActivity) => {
+          }).then((nda: StravaNativeDetailedActivity) => {
+
+            nativeDetailedActivity = nda;
 
             detailedActivity = transformStravaDetailedActivity(nativeDetailedActivity);
 
@@ -355,29 +359,25 @@ export function getDetailedActivity(request: Request, response: Response): Promi
               return Promise.resolve(segmentIds);
             }
 
-          }).then((ids: number[]) => {
+          }).then((taggedSegmentIds: number[]) => {
 
-            segmentIds = ids;
+            const taggedSegmentEfforts: StravatronSegmentEffort[] = [];
 
-            // get the segments that are in the database already and fetch the
-            // segments that are not in the database from strava (and add them to the db)
-            return getSegments(accessToken, ids);
+            for (const stravaNativeDetailedSegmentEffort of nativeDetailedActivity.segment_efforts) {
+              const index: number = taggedSegmentIds.indexOf(stravaNativeDetailedSegmentEffort.segment.id);
+              if (index >= 0) {
+                taggedSegmentEfforts.push(transformStravaDetailedSegmentEffort(stravaNativeDetailedSegmentEffort));
+              }
+            }
 
-          }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
+            console.log(taggedSegmentEfforts);
 
-            segments = detailedSegmentsRet;
+            return addSegmentEffortsToDb(taggedSegmentEfforts);
 
-            const athleteId = '2843574';            // pa
-            // const athleteId = '7085811';         // ma
-
-            return getAllEffortsForAllSegments(accessToken, athleteId, false, segments);
-
-          }).then((allEffortsForSegmentsInCurrentActivity) => {
-
-            allSegmentEffortsForSegmentsInActivity = getSegmentEffortsInActivity(allEffortsForSegmentsInCurrentActivity);
-
+          }).then(() => {
+            
             return fetchStreams(accessToken, activityId);
-
+          
           }).then((streams: StravatronStream[]) => {
 
             const stravatronStreamData: StravatronActivityStreams = getStreamData(detailedActivity.id, streams);
@@ -427,6 +427,10 @@ export function getDetailedActivity(request: Request, response: Response): Promi
     });
 }
 
+// for each segment in segments, get all the associated segmentEfforts
+// do this by getting all the segmentEfforts for all the segments that are already in the database
+// then, get the segmentEfforts for all the segments in the current activity - add these to the db
+
 function getAllEffortsForAllSegments(accessToken: any, athleteId: string, forceReload: boolean, segments: StravatronDetailedSegment[]): Promise<StravatronSegmentEffortsForSegment[]> {
 
   const allEffortsForSegmentsInCurrentActivity: StravatronSegmentEffortsForSegment[] = [];
@@ -439,6 +443,15 @@ function getAllEffortsForAllSegments(accessToken: any, athleteId: string, forceR
     }
 
     const segment: StravatronDetailedSegment = segments[index];
+
+    // return getSegmentEffortsForSegmentFromDb(segment.id)
+    //   .then((segmentEffortsForSegmentRet: StravatronSegmentEffortsForSegment) => {
+    //     segmentEffortsForSegment = segmentEffortsForSegmentRet;
+    //   }).then(() => {
+
+    //   }).then(() => {
+    //     return getNextEffortsForSegment(index + 1);
+    //   });
 
     // see if all prior efforts for this segment have already been retrieved
     // THIS ONLY WORKS IF THIS CODE IS NOT CALLED WHEN THE ACTIVITY HAS ALREADY BEEN LOADED / VIEWED
@@ -761,7 +774,7 @@ function addSegmentsToDb(detailedSegments: StravatronDetailedSegment[]): Promise
   });
 }
 
-function addSegmentEffortsToDb(segmentEfforts: StravatronSegmentEffort[]): Promise<any> {
+function addSegmentEffortsToDb(segmentEfforts: StravatronSegmentEffort[]): Promise<void> {
   if (segmentEfforts.length === 0) {
     return Promise.resolve();
   }
