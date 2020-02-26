@@ -80,6 +80,14 @@ function addSummaryActivitiesToDb(summaryActivities: StravatronSummaryActivity[]
     return Activity.create(summaryActivity)
       .then((addedActivity: any) => {
         return addNextSummaryActivity(index + 1);
+      }).catch((err: any) => {
+        if (!isNil(err.code) && err.code === 11000) {
+          console.log('addSummaryActivitiesToDb: duplicate key error');
+          return addNextSummaryActivity(index + 1);
+        }
+        else {
+          throw (err);
+        }
       });
   };
 
