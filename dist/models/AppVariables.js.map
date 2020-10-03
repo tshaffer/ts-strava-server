@@ -1,0 +1,1 @@
+{"version":3,"file":"AppVariables.js","sourceRoot":"","sources":["../../src/models/AppVariables.ts"],"names":[],"mappings":";;;;;;;;;AAAA,mDAAqC;AAErC,MAAM,MAAM,GAAG,QAAQ,CAAC,MAAM,CAAC;AAE/B,MAAM,kBAAkB,GAAG,IAAI,MAAM,CACnC;IACE,yBAAyB,EAAE,EAAE,IAAI,EAAE,IAAI,EAAE,QAAQ,EAAE,IAAI,EAAE;CAC1D,CACF,CAAC;AAEF,kBAAe,QAAQ,CAAC,KAAK,CAAC,cAAc,EAAE,kBAAkB,CAAC,CAAC"}
