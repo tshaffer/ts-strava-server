@@ -372,6 +372,12 @@ export function getDetailedActivity(request: Request, response: Response): Promi
 
             taggedSegmentIds = tSegmentIds;
 
+            return getSegments(accessToken, taggedSegmentIds);
+          
+          }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
+
+            segments = detailedSegmentsRet;
+
             const taggedSegmentEfforts: StravatronSegmentEffort[] = [];
 
             for (const stravaNativeDetailedSegmentEffort of nativeDetailedActivity.segment_efforts) {
