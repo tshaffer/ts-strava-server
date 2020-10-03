@@ -16,7 +16,8 @@ class App {
 
     // load env variables
 
-    dotenv.config( { path: './ts-strava-server/src/config/config.env' });
+    dotenv.config( { path: './src/config/config.env' });
+    // dotenv.config( { path: './ts-strava-server/src/config/config.env' });
     // dotenv.config( { path: '/Users/tedshaffer/Documents/Projects/ts-strava/ts-strava-server/src/config/config.env'});
     console.log('port env: ' + process.env.PORT);
 

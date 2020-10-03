@@ -2,8 +2,10 @@ import mongoose from 'mongoose';
 
 const connectDB = async () => {
   console.log('uri is:');
-  console.log(process.env.MONGO_URI);
-  const conn = await mongoose.connect(process.env.MONGO_URI, {
+  const mongoUri = process.env.MONGO_URI;
+  // const mongoUri: string = 'mongodb+srv://ted:xasmJkrMSHnLgjIK@cluster0-ihsik.mongodb.net/stravatron?retryWrites=true&w=majority';
+  console.log(mongoUri);
+  const conn = await mongoose.connect(mongoUri, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useFindAndModify: false,
