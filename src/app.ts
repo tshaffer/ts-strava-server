@@ -59,9 +59,12 @@ class App {
   }
 
   private config(): void {
-
-
-    const port = process.env.PORT || 8000;
+    // const port = process.env.PORT || 8000;
+    // this.app.set('port', port);
+    let port: any = process.env.PORT;
+    if (port === undefined || port === null || port === '') {
+      port = 8000;
+    }
     this.app.set('port', port);
   }
 }
