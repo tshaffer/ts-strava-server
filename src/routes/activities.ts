@@ -16,6 +16,8 @@ import {
   insertZwiftSegments,
   getMeanMaximalPowerData,
   getAllMaximalPowerData,
+  deleteActivity,
+  deleteActivities,
  } from '../controllers';
 
 activitiesRouter.get('/activities', getActivities);
@@ -30,6 +32,8 @@ activitiesRouter.post('/activity', createActivity);
 activitiesRouter.post('/segment', createSegment);
 activitiesRouter.post('/segmentEffort', createSegmentEffort);
 activitiesRouter.post('/stream', createStream);
+activitiesRouter.post('/deleteActivity', deleteActivity);
+activitiesRouter.post('/deleteActivities', deleteActivities);
 activitiesRouter.get('/stream/:id', getStreams);
 activitiesRouter.get('/segment/:id', getStravaSegment);
 activitiesRouter.get('/segmentEffort/:id', getStravaSegmentEffort);

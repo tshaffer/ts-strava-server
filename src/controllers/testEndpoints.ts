@@ -8,6 +8,65 @@ import ActivityStreams from '../models/ActivityStreams';
 import { retrieveAccessToken, fetchStreams, fetchSegment, fetchSegmentEffort } from './strava';
 import { getStreamData } from './activity';
 
+export function deleteActivity(request: Request, response: Response, next: any) {
+
+  console.log('deleteActivity');
+  console.log(request.body);
+
+  const activityId: number = Number(request.body.activityId);
+
+  retrieveAccessToken()
+    .then((accessToken: any) => {
+      const promise = Activity.deleteOne({ id: { $eq: activityId } });
+      promise.then(() => {
+        console.log('Activity document deleted');
+        const promise2 = ActivityStreams.deleteMany({ activityId: { $eq: activityId } });
+        promise2.then(() => {
+          console.log('ActivityStream document(s) deleted');
+          const promise3 = SegmentEffort.deleteMany({ activityId: { $eq: activityId } });
+          promise3.then(() => {
+            console.log('SegmentEffort document(s) deleted');
+            response.status(200).json({
+              success: true,
+            });
+          });
+        });
+      });
+    });
+}
+
+export function deleteActivities(request: Request, response: Response, next: any) {
+
+  console.log('deleteActivities');
+  console.log(request.body);
+
+  const activityDeletePromises: any[] = [];
+  for (const activityId of request.body.activityIds) {
+    const promise = Activity.deleteOne({ id: { $eq: activityId } });
+    activityDeletePromises.push(promise);
+  }
+  Promise.all(activityDeletePromises).then( () => {
+    const activityStreamDeletePromises: any[] = [];
+    for (const activityId of request.body.activityIds) {
+      const promise = ActivityStreams.deleteMany({ activityId: { $eq: activityId } });
+      activityStreamDeletePromises.push(promise);
+    }
+    Promise.all(activityStreamDeletePromises).then( () => {
+      const segmentEffortDeletePromises: any[] = [];
+      for (const activityId of request.body.activityIds) {
+        const promise = SegmentEffort.deleteMany({ activityId: { $eq: activityId } });
+        segmentEffortDeletePromises.push(promise);
+      }
+      Promise.all(segmentEffortDeletePromises).then( () => {
+        console.log('All document(s) deleted');
+        response.status(200).json({
+          success: true,
+        });
+      });
+    });
+  });
+}
+
 export function getStravaSegment(request: Request, response: Response, next: any) {
 
   const segmentId: number = Number(request.params.id);
@@ -25,7 +84,7 @@ export function getStravaSegment(request: Request, response: Response, next: any
 }
 
 export function getStravaSegmentEffort(request: Request, response: Response, next: any) {
-  
+
   const segmentEffortId: number = Number(request.params.id);
 
   retrieveAccessToken()
