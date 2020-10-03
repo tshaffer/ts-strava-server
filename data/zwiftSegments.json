@@ -106,6 +106,10 @@
       "id": 16781411
     },
     {
+      "name": "Leith Hill Full",
+      "id": 16750904
+    },
+    {
       "name": "Triple Loops",
       "id": 16781219
     },
@@ -268,6 +272,38 @@
     {
       "name": "Volcano Descent",
       "id": 19970445
+    },
+    {
+      "name": "Volcano Flat Forward 1 Lap from Start Pier",
+      "id": 14950704
+    },
+    {
+      "name": "Volcano Flat",
+      "id": 14032442
+    },
+    {
+      "name": "Medio Fondo Part 3",
+      "id": 19643832
+    },
+    {
+      "name": "Epic KOM Forward",
+      "id": 16765440
+    },
+    {
+      "name": "Epic KOM",
+      "id": 16784833
+    },
+    {
+      "name": "NYC KOM",
+      "id": 19141090
+    },
+    {
+      "name": "NYC KOM Reverse",
+      "id": 19141092
+    },
+    {
+      "name": "The Magnificent 8",
+      "id": 22180287
     }
   ]
 }
