@@ -1,3 +1,4 @@
+import { isNil } from 'lodash';
 import { PowerData } from '../type';
 
 export function getMmpData(watts: number[]): number[] {
@@ -32,7 +33,7 @@ export function getMmpData(watts: number[]): number[] {
 export function getPowerData(ftp: number, startIndex: number, endIndex: number, time: any[], watts: any[]): PowerData {
 
   // using a 30 second window - if there are fewer than that number of values, return 0's
-  if (endIndex - startIndex < 30) {
+  if ((endIndex - startIndex < 30) || isNil(watts)) {
     return {
       normalizedPower: 0,
       intensityFactor: 0,
