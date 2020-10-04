@@ -18,6 +18,7 @@ import {
   getAllMaximalPowerData,
   deleteActivity,
   deleteActivities,
+  getAllEfforts,
  } from '../controllers';
 
 activitiesRouter.get('/activities', getActivities);
@@ -25,6 +26,7 @@ activitiesRouter.get('/activity/:id', getDetailedActivity);
 activitiesRouter.get('/reloadEfforts/:id', reloadEfforts);
 activitiesRouter.get('/meanMaximalPowerData/:id', getMeanMaximalPowerData);
 activitiesRouter.get('/allMaximalPowerData', getAllMaximalPowerData);
+activitiesRouter.get('/allEfforts/:id', getAllEfforts);
 
 // test endpoints
 activitiesRouter.post('/summaryActivity', createSummaryActivity);

@@ -3,6 +3,7 @@ import {
   getIndex,
   getCSS,
   getBundle,
+  getBundleMap,
   getAthletes,
  } from '../controllers';
 
@@ -17,6 +18,7 @@ export class Routes {
     app.get('/index.html', getIndex);
     app.get('/css/app.css', getCSS);
     app.get('/build/bundle.js', getBundle);
+    app.get('/build/bundle.js.map', getBundleMap);
     app.get('/app/v1/athletes', getAthletes);
   }
 }

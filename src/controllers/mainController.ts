@@ -15,3 +15,8 @@ export function getBundle(request: Request, response: Response) {
   const pathToBundle = path.join(__dirname, '../../public', 'build', 'bundle.js');
   response.sendFile(pathToBundle);
 }
+
+export function getBundleMap(request: Request, response: Response) {
+  const pathToBundleMap = path.join(__dirname, '../../public', 'build', 'bundle.js.map');
+  response.sendFile(pathToBundleMap);
+}

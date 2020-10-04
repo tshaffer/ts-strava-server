@@ -293,6 +293,26 @@ export function reloadEfforts(request: Request, response: Response): Promise<any
     });
 }
 
+export function getAllEfforts(request: Request, response: Response): Promise<any> {
+
+  console.log('getAllEfforts');
+
+  let accessToken: string;
+
+  const segmentId: number = Number(request.params.id);
+  return retrieveAccessToken()
+    .then((accessTokenRet: any) => {
+      accessToken = accessTokenRet;
+      const athleteId = '2843574';
+      console.log('invoke fetchAllEfforts');
+      return fetchAllEfforts(accessToken, athleteId, segmentId)
+    }).then((segmentEffortsForSegmentRet: StravatronSegmentEffortsForSegment) => {
+      console.log('return from fetchAllEfforts');
+      console.log(segmentEffortsForSegmentRet);
+      response.json(segmentEffortsForSegmentRet);
+    });
+}
+
 // detailed activity
 export function getDetailedActivity(request: Request, response: Response): Promise<any> {
 
@@ -373,7 +393,7 @@ export function getDetailedActivity(request: Request, response: Response): Promi
             taggedSegmentIds = tSegmentIds;
 
             return getSegments(accessToken, taggedSegmentIds);
-          
+
           }).then((detailedSegmentsRet: StravatronDetailedSegment[]) => {
 
             segments = detailedSegmentsRet;
