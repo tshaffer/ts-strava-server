@@ -34,6 +34,7 @@ export function retrieveAccessToken() {
     })
     .then((response: any) => {
       return Promise.resolve(response.data.access_token);
+      // return Promise.resolve('d1ffbed373d24635a608e7601e82e317383bfd40');
     }).catch((err: Error) => {
       console.log('response to axios post: ');
       console.log('err: ', err);
@@ -42,6 +43,8 @@ export function retrieveAccessToken() {
 }
 
 function fetchStravaData(endPoint: string, accessToken: string): Promise<any> {
+
+  // accessToken = 'af14818508e2cc9865f2d61c123c5ac6c93e5db9';
 
   return new Promise((resolve, reject) => {
     const options: any = {
@@ -275,7 +278,7 @@ export function fetchAllEfforts(accessToken: string, athleteId: string, segmentI
 
   return new Promise((resolve) => {
 
-    const path = 'segments/' + segmentId.toString() + '/all_efforts?athlete_id=' + athleteId.toString();
+    const path = 'segments/' + segmentId.toString() + '/all_efforts?athlete_id=' + athleteId.toString() + '&per_page=200';
 
     const stravatronSegmentEfforts: StravatronSegmentEffort[] = [];
     fetchStravaData(path, accessToken)
@@ -288,7 +291,7 @@ export function fetchAllEfforts(accessToken: string, athleteId: string, segmentI
   });
 }
 
-export function   transformStravaDetailedSegmentEffort(stravaDetailedSegmentEffort: StravaNativeDetailedSegmentEffort): StravatronSegmentEffort {
+export function transformStravaDetailedSegmentEffort(stravaDetailedSegmentEffort: StravaNativeDetailedSegmentEffort): StravatronSegmentEffort {
 
   const nativeSummarySegment: StravaNativeSummarySegment = stravaDetailedSegmentEffort.segment;
 
@@ -365,7 +368,7 @@ export function fetchSegmentEffort(accessToken: string, segmentEffortId: number)
 
   return new Promise((resolve) => {
 
-    const path = 'segment_efforts/' + segmentEffortId.toString();
+    const path = 'segment_efforts/' + segmentEffortId.toString() + '&per_page=100';
 
     fetchStravaData(path, accessToken)
       .then((stravaSegmentEffort) => {
